@@ -12,7 +12,7 @@ const scene = new Scene();
 const geometry = new TorusKnotGeometry(5, 2, 128, 16, 4, 6);
 
 /** Older revisions of THREE require `uv2` attribute for lightMap and aoMap */
-if (window.REVISION < 151) geometry.attributes.uv2 = geometry.attributes.uv;
+if (window._Revision < 151) geometry.attributes.uv2 = geometry.attributes.uv;
 
 const camera = new PerspectiveCamera(
   60,

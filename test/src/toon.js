@@ -9,12 +9,12 @@ for (let c = 0; c <= colors.length; c++) {
   colors[c] = Math.min((c + 1) / colors.length, 1) * 255;
 }
 
-Promise.all([map, import('three')]).then(([texture, module]) => {
+map.then((texture) => {
   const gradientMap = new DataTexture(
     colors,
     colors.length,
     1,
-    window.REVISION < 136 ? module.LuminanceFormat : module.RedFormat,
+    window._OctetFormat,
   );
   gradientMap.needsUpdate = true;
 

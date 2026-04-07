@@ -10,6 +10,21 @@ const revision = Number(REVISION);
 
 const resolvePlugin = nodeResolve();
 
+/** @type {string} */
+let globals = '';
+
+await import('three').then((module) => {
+  Object.entries({
+    Revision: revision,
+    ColorSpace: revision < 152 ? 'encoding' : 'colorSpace',
+    sRGB: module[revision < 152 ? 'sRGBEncoding' : 'SRGBColorSpace'],
+    OctetFormat: module[revision < 136 ? 'LuminanceFormat' : 'RedFormat'],
+  }).map(([name, value]) => {
+    const v = typeof value === 'string' ? `'${value}'` : value;
+    globals += `window._${name} = ${v};\n`;
+  });
+});
+
 /**
  * @param {string} name
  * @param {import('@brybrant/rollup-plugin-three-minify').UserOptions} options
@@ -19,7 +34,7 @@ function createConfig(name, options) {
   return {
     input: `./test/src/${name}.js`,
     output: {
-      banner: `window.REVISION = ${revision};`,
+      banner: globals,
       file: `./test/dist/${name}.js`,
       format: 'iife',
       validate: true,

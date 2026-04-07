@@ -20,14 +20,8 @@ export function createTexture(svg, width, height, callback) {
 
     callback(texture);
 
-    return import('three').then((module) => {
-      if (window.REVISION < 152) {
-        texture.encoding = module.sRGBEncoding;
-      } else {
-        texture.colorSpace = module.SRGBColorSpace;
-      }
-      texture.needsUpdate = true;
-      return texture;
-    });
+    texture[window._ColorSpace] = window._sRGB;
+    texture.needsUpdate = true;
+    return texture;
   });
 }
