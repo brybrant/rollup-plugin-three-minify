@@ -1,6 +1,6 @@
 import { MeshLambertMaterial } from 'three';
 
-import { createScene } from './imports/app';
+import { createScene } from '../../app';
 import { shadowPlane } from './imports/create-shadow-plane';
 
 shadowPlane.then((plane) => {

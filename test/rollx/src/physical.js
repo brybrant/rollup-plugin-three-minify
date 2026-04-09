@@ -1,6 +1,6 @@
 import { MeshPhysicalMaterial } from 'three';
 
-import { createScene } from './imports/app';
+import { createScene } from '../../app';
 import { equirect } from './imports/create-equirect';
 
 equirect.then((texture) => {

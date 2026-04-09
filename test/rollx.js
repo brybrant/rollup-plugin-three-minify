@@ -1,46 +1,34 @@
+/**
+ * Only run this script from the root directory using one of the following:
+ * - `npm run rollup`
+ * - `npm run rolldown`
+ */
+
+import { env } from 'node:process';
+
 import html from '@rollup/plugin-html';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
-import threeMinifyPlugin from '@brybrant/rollup-plugin-three-minify';
+import threeMinifyPlugin from 'rollup-plugin-three-minify';
 
-import { REVISION } from 'three';
+import { globalPlugin, revision } from './global-plugin.js';
 
-import { rollup } from 'rollup';
-
-const revision = Number(REVISION);
-
-const resolvePlugin = nodeResolve();
-
-/** @type {string} */
-let globals = '';
-
-await import('three').then((module) => {
-  Object.entries({
-    Revision: revision,
-    ColorSpace: revision < 152 ? 'encoding' : 'colorSpace',
-    sRGB: module[revision < 152 ? 'sRGBEncoding' : 'SRGBColorSpace'],
-    OctetFormat: module[revision < 136 ? 'LuminanceFormat' : 'RedFormat'],
-  }).map(([name, value]) => {
-    const v = typeof value === 'string' ? `'${value}'` : value;
-    globals += `window._${name} = ${v};\n`;
-  });
-});
+/** @type {'up'|'down'} */
+const roll = env.ROLL;
 
 /**
  * @param {string} name
- * @param {import('@brybrant/rollup-plugin-three-minify').UserOptions} options
+ * @param {import('rollup-plugin-three-minify').UserOptions} options
  * @returns {import('rollup').RollupOptions} Rollup config options
  */
 function createConfig(name, options) {
   return {
-    input: `./test/src/${name}.js`,
+    input: `./test/rollx/src/${name}.js`,
     output: {
-      banner: globals,
-      file: `./test/dist/${name}.js`,
-      format: 'iife',
-      validate: true,
+      file: `./test/rollx/dist/${name}.js`,
     },
     plugins: [
-      resolvePlugin,
+      globalPlugin,
+      ...(roll === 'up' ? [nodeResolve()] : []),
       html({
         fileName: `${name}.html`,
         template: () => `
@@ -50,7 +38,7 @@ function createConfig(name, options) {
             <meta charset='utf-8'>
             <meta name='darkreader-lock'/>
             <title>${name}</title>
-            <link href='../index.css' rel='stylesheet'/>
+            <link href='../../index.css' rel='stylesheet'/>
           </head>
           <body>
             <script src='${name}.js'></script>
@@ -110,7 +98,15 @@ const configs = [
   }),
 ];
 
-Promise.all(configs.map((config) => rollup(config)))
+/**
+ * Might also be {import('rolldown').rolldown} but they share the same API sooo
+ * @type {import('rollup').rollup}
+ */
+const bundler = await import(`roll${roll}`).then(
+  (module) => module[`roll${roll}`],
+);
+
+Promise.all(configs.map((config) => bundler(config)))
   .then((builds) => {
     /** @type {Promise<void>[]} */
     const finished = [];
@@ -118,7 +114,7 @@ Promise.all(configs.map((config) => rollup(config)))
     for (let i = 0; i < builds.length; i++) {
       const build = builds[i];
 
-      build.write(configs[i].output).then(() => finished.push(build.close()));
+      finished.push(build.write(configs[i].output).then(() => build.close));
     }
 
     return Promise.all(finished);

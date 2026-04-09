@@ -1,7 +1,13 @@
 {
-  "name": "@brybrant/rollup-plugin-three-minify",
+  "name": "rollup-plugin-three-minify",
   "description": "Minify THREE.js shader code, and remove redundant code",
-  "keywords": ["rollup-plugin", "three", "minify"],
+  "keywords": [
+    "rollup-plugin",
+    "rolldown-plugin",
+    "vite-plugin",
+    "three",
+    "minify"
+  ],
   "author": "brybrant",
   "license": "GPL-3.0-only",
   "version": "0.0.1",
@@ -22,14 +28,13 @@
     }
   },
   "files": [
-    "./dist/index.d.cts",
-    "./dist/index.d.mts",
-    "./dist/index.cjs",
-    "./dist/index.mjs"
+    "./dist"
   ],
   "scripts": {
     "build": "tsdown",
-    "test": "node ./test/rollup.js"
+    "rollup": "env ROLL=up node ./test/rollx.js",
+    "rolldown": "env ROLL=down node ./test/rollx.js",
+    "vite": "node ./test/vite.js"
   },
   "repository": {
     "type": "git",
@@ -37,12 +42,13 @@
   },
   "devDependencies": {
     "@brybrant/eslint-config": "^0.0.6",
-    "@brybrant/rollup-plugin-three-minify": ".",
     "@rollup/plugin-html": "^2.0.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "rollup": "^4.60.1",
+    "rollup-plugin-three-minify": ".",
     "three": "^0.183.2",
-    "tsdown": "^0.21.7"
+    "tsdown": "^0.21.7",
+    "vite": "^7.3.2"
   },
   "peerDependencies": {
     "three": ">= 0.135.0"

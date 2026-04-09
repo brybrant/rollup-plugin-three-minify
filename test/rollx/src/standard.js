@@ -1,6 +1,6 @@
 import { MeshStandardMaterial } from 'three';
 
-import { createScene } from './imports/app';
+import { createScene } from '../../app';
 import { cube } from './imports/create-cube';
 
 cube.then((texture) => {

@@ -1,6 +1,6 @@
 import { DataTexture, MeshToonMaterial } from 'three';
 
-import { createScene } from './imports/app';
+import { createScene } from '../../app';
 import { map } from './imports/create-map';
 
 const colors = new Uint8Array(4);
