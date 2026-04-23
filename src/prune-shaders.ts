@@ -1,62 +1,78 @@
-import type { IncludeName, MaterialName } from './const';
+import type { IncludeName, MaterialName, Replacer } from './const';
 
-import pruneIncludes from './prune-includes';
-import pruneMaterials from './prune-materials';
+import type { Options } from './options';
+
+/** Matches entries in `ShaderLib` */
+const materialRegex =
+  /^(\s+)(\w+): {[^]+?ShaderChunk\.([a-zA-Z]+)[^]+?^\1},?/gm;
+
+/** Matches entries in `ShaderChunk` */
+const includeRegex = /\s+(\w+):.+/g;
 
 /**
- * Remove unwanted includes and materials
+ * Remove redundant includes and materials from `ShaderChunk` and `ShaderLib`.
+ *
+ * This should also treeshake redundant GLSL code declarations from the bundle.
  * @param code code
  * @param keepMaterials Set of material shaders to keep
- * @param keepShaders Array of shader chunks to keep
- * @param unwantedIncludes Array of includes to remove
+ * @param discardIncludes Set of includes to discard
  * @returns `code` (modified)
  */
-export default function (
+export function pruneShaders(
   code: string,
-  keepMaterials: Set<MaterialName>,
-  keepShaders: string[],
-  unwantedIncludes: IncludeName[],
+  keepMaterials: Options['materials'],
+  discardIncludes: Set<IncludeName>,
 ): string {
-  const ShaderChunk = /^const ShaderChunk = {[\s\S]+?^};/m.exec(code);
-
-  if (ShaderChunk === null) {
-    console.error('ShaderChunk not found! Skipping shader compression...');
-    return code;
-  }
-
-  /** A mutable copy of `THREE.ShaderChunk` */
-  let newShaderChunk = ShaderChunk[0];
-
-  /** Remove unwanted includes */
-  [code, newShaderChunk] = pruneIncludes(
-    code,
-    newShaderChunk,
-    unwantedIncludes,
-  );
-
-  const ShaderLib = /^const ShaderLib = {[\s\S]+?^};/m.exec(code);
-
-  if (ShaderLib === null) {
-    console.error('ShaderLib not found! Skipping material compression...');
-    return code.replace(ShaderChunk[0], newShaderChunk);
-  }
-
-  /** A mutable copy of `THREE.ShaderLib` */
-  let newShaderLib = ShaderLib[0];
+  const discardShaderChunks: Set<string> = new Set(discardIncludes);
 
   /**
-   * Remove unwanted materials.
-   * Adds wanted materials to `keepShaders` array for later compressing.
+   * Removes redundant materials from `ShaderLib` & adds their respective keys
+   * of `ShaderChunk` to `discardShaderChunks` for later removal.
+   * @param match `$&`
+   * @param indent *used only for backreference within the regex* (`$1`)
+   * @param material Material (key of `ShaderLib`) (`$2`)
+   * @param key Material (key of `ShaderChunk`) (`$3`)
+   * @returns `match` if `material` in `keepMaterials`, otherwise empty string
    */
-  [code, newShaderChunk, newShaderLib] = pruneMaterials(
-    code,
-    newShaderChunk,
-    newShaderLib,
-    keepMaterials,
-    keepShaders,
+  const materialReplacer: Replacer = (match, indent, material, key) => {
+    if (keepMaterials.has(material as MaterialName)) return match;
+
+    discardShaderChunks.add(`${key}_vert`).add(`${key}_frag`);
+
+    return '';
+  };
+
+  code = code.replace(
+    /ShaderLib =[^]+ShaderLib\.physical =[^]+?\n};/,
+    (ShaderLib) => {
+      ShaderLib = ShaderLib.replace(materialRegex, materialReplacer);
+
+      if (keepMaterials.has('physical')) return ShaderLib;
+
+      /**
+       * Standard & Physical materials use the same vertex & fragment shaders,
+       * therefore `discardShaderChunks` must already contain physical
+       */
+      return ShaderLib.replace(/ShaderLib\.physical =[^]+/, '');
+    },
   );
 
-  return code
-    .replace(ShaderChunk[0], newShaderChunk)
-    .replace(ShaderLib[0], newShaderLib);
+  /**
+   * Removes redundant entries from `ShaderChunk`
+   * @param match `$&`
+   * @param key key of `ShaderChunk` (`$1`)
+   * @returns empty string if `key` in `discardShaderChunks`, otherwise `match`
+   */
+  const includeReplacer: Replacer = (match, key) => {
+    return discardShaderChunks.has(key) ? '' : match;
+  };
+
+  code = code.replace(/ShaderChunk =[^]+?\n};/, (ShaderChunk) => {
+    return ShaderChunk.replace(includeRegex, includeReplacer);
+  });
+
+  return code.replace(
+    new RegExp(`#include <(${[...discardIncludes].join('|')})>`, 'g'),
+    '',
+  );
 }

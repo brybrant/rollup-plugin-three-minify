@@ -1,73 +1,60 @@
-/** Matches all multi-line GLSL comments */
-const multiLineComments: RegExp = /\s*\/\*[\s\S]+?\*\//gm;
+import type { Replacer } from './const';
 
-/** Matches all single-line GLSL comments */
-const singleLineComments: RegExp = /\s*\/\/.*?$/gm;
+/** Matches all GLSL comments */
+const commentsRegex = /(\/\*[^]+?\*\/|\/\/.*)/gm;
 
-/** Matches 2 or more consecutive whitespace characters (except newline) */
-const consecutiveWhitespace: RegExp = /[ \t]{2,}/g;
-
-/** Matches floats starting with 0 */
-const floatStarting0: RegExp = /(\D)0(\.\d+)/g;
-
-/** Matches floats ending with 0 */
-const floatEnding0: RegExp = /(\d+\.)0(\D)/g;
-
-/** Matches whitespace around symbols */
-const redundantWhitespace: RegExp =
-  /\s*({|}|=|\*|,|\+|\/|>|<|&|\||\[|\]|\(|\)|-|!|\?|:|;)\s*/g;
-
-/** Matches `#if` and `#elif` directives (condition in capture group `[1]`) */
-const ifDirective: RegExp = /^#(?:if|elif) ([ \S]+)$/;
+/** Matches floats with redundant leading or trailing zero (like 0.1 or 1.0) */
+const redundantZeroesRegex = /(\D)0(\.\d+)|(\d+\.)0(\D)/g;
 
 /**
- * Compress the GLSL code
- * Adapted from `vite-plugin-glsl`
- * https://github.com/UstymUkhman/vite-plugin-glsl/blob/main/src/loadShader.js
- * @param glsl GLSL code
- * @returns Compressed GLSL code
+ * Remove redundant zeroes in floats
+ * @param _ `$&`
+ * @param a Leading non-digit (`$1`)
+ * @param b Float (fraction part) (`$2`)
+ * @param c Float (integer part) (`$3`)
+ * @param d Trailing non-digit (`$4`)
+ * @returns Float without redundant leading / trailing zero
  */
-export default function (glsl: string): string {
-  let newLine = false;
+const redundantZeroReplacer: Replacer = (_, a, b, c, d) => {
+  return a && b ? a + b : c + d;
+};
 
-  return glsl
-    .replace(multiLineComments, '')
-    .replace(singleLineComments, '')
-    .replace(floatStarting0, '$1$2') // (0.1 → .1)
-    .replace(floatEnding0, '$1$2') // (1.0 → 1.)
-    .replace(consecutiveWhitespace, ' ')
-    .split(/\n+/)
-    .reduce<string[]>((result, line) => {
-      line = line.trim();
+/** Matches whitespace around symbols */
+const redundantWhitespaceRegex = /\s*([{}=*,+/><&|[\]()\-!?:;])\s*/g;
 
-      if (line[0] === '#') {
-        if (newLine) result.push('\n');
-        const directive = ifDirective.exec(line);
+/** Matches 2 or more consecutive whitespaces */
+const consecutiveWhitespaceRegex = /\s{2,}/g;
 
-        if (directive !== null) {
-          line = line.replace(
-            directive[1],
-            directive[1].replace(redundantWhitespace, '$1'),
-          );
-        }
-        result.push(line, '\n');
-        newLine = false;
-        return result;
-      }
+/** Matches everything except lines beginning with "#" (directives) */
+const glslRegex = /^[^#]+$/gm;
 
-      if (
-        !(line[0] === '{') &&
-        result.length > 0 &&
-        result[result.length - 1].endsWith('else')
-      ) {
-        result.push(' ');
-      }
+const glslReplacer: Replacer = (glsl) => {
+  glsl = glsl.trim();
+  glsl = glsl.replace(consecutiveWhitespaceRegex, ' ');
+  return glsl.replace(redundantWhitespaceRegex, '$1');
+};
 
-      result.push(line.replace(redundantWhitespace, '$1'));
-      newLine = true;
+/** Matches lines beginning with "#" (directives) */
+const directiveRegex = /^\s*#((?:el)?if[ \t]+)?(.+)$/gm;
 
-      return result;
-    }, [])
-    .join('')
-    .replace(/\n+/g, '\n');
+const directiveReplacer: Replacer = (_, conditional, directive) => {
+  directive = directive.replace(consecutiveWhitespaceRegex, ' ');
+
+  return conditional
+    ? `#${conditional}${directive.replace(redundantWhitespaceRegex, '$1')}`
+    : `#${directive}`;
+};
+
+/**
+ * Minify GLSL code
+ * @param glsl GLSL code
+ * @returns Minified GLSL code
+ */
+export function minifyGLSL(glsl: string): string {
+  glsl = glsl.replace(commentsRegex, '');
+  glsl = glsl.replace(redundantZeroesRegex, redundantZeroReplacer);
+  glsl = glsl.replace(glslRegex, glslReplacer);
+  glsl = glsl.replace(directiveRegex, directiveReplacer);
+
+  return glsl;
 }

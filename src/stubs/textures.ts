@@ -1,6 +1,7 @@
-import { revision } from './const';
+import { revision } from '../const';
 
-const dummyWebGLTextures = `
+/** ### `WebGLTextures` stub. */
+export const WebGLTextures = `
 function WebGLTextures(${revision < 182 ? '' : ' _gl, extensions, state '}) {
   this.allocateTextureUnit = function () { return 0 };
   this.resetTextureUnits =
@@ -30,15 +31,3 @@ function WebGLTextures(${revision < 182 ? '' : ' _gl, extensions, state '}) {
   }
 }
 `;
-
-/**
- * Replaces `WebGLTextures` with a dummy.
- * @param code code
- * @returns `code` (modified)
- */
-export default function (code: string): string {
-  return code.replace(
-    /^function WebGLTextures.+{[\s\S]+?^}/m,
-    dummyWebGLTextures,
-  );
-}

@@ -1,6 +1,7 @@
-import { revision } from './const';
+import { revision } from '../const';
 
-const dummyWebGLBackground = `
+/** ### `WebGLBackground` stub. */
+export const WebGLBackground = `
 function WebGLBackground(
   renderer,
   ${revision < 183 ? 'cubemaps' : 'environments'},
@@ -59,15 +60,3 @@ function WebGLBackground(
   };
 }
 `;
-
-/**
- * Replaces `WebGLBackground` with a dummy.
- * @param code code
- * @returns `code` (modified)
- */
-export default function (code: string): string {
-  return code.replace(
-    /^function WebGLBackground.+{[\s\S]+?^}/m,
-    dummyWebGLBackground,
-  );
-}

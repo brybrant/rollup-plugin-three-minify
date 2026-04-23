@@ -6,6 +6,7 @@ import {
   materials,
   type MaterialName,
   distanceMaterial,
+  revision,
 } from './const';
 
 export interface Options {
@@ -22,70 +23,105 @@ export interface Options {
   jsonMethods: boolean;
 
   /**
-   * ### Include background stuff?
-   * Set to `true` if your application sets a value on `Scene.background`.
-   * @default false
-   */
-  background: boolean;
-
-  /**
-   * ### Include clipping stuff?
-   * Set to `true` if your application uses clipping planes.
-   * @default false
-   */
-  clipping: boolean;
-
-  /**
-   * ### Include environment stuff?
-   * Set to `true` if your application uses materials with environment maps,
-   * `PMREMGenerator` or `Scene.environment` for physical materials.
-   * @default false
-   */
-  environment: boolean;
-
-  /**
-   * ### Include shadow stuff?
-   * Set to `true` if your application uses materials which cast shadows.
-   * @default false
-   */
-  shadows: boolean;
-
-  /**
-   * ### Include texture stuff?
-   * Set to `true` if your application uses textures (like material maps).
-   * @default false
-   */
-  textures: boolean;
-
-  /**
-   * ### Include XR stuff?
+   * ### Keep `WebXRManager` subsystem?
    * Set to `true` if your application uses THREE's WebXR stuff.
    * @default false
    */
   xr: boolean;
 
   /**
-   * Set of THREE includes to keep in the bundle **(whitelist)**
-   *
+   * ### Set of THREE includes to keep in the bundle **(whitelist)**
    * *(Includes not in this set will have shader code discarded!)*
    */
   includes: Set<IncludeName>;
 
   /**
-   * Set of THREE materials to keep in the bundle **(whitelist)**
-   *
+   * ### Set of THREE materials to keep in the bundle **(whitelist)**
    * *(Materials not in this set will have shader code discarded!)*
    */
   materials: Set<MaterialName>;
+
+  subsystems: {
+    /**
+     * ### Keep `WebGLBackground` subsystem?
+     * `true` if your application sets a `Texture` value on `Scene.background`.
+     *
+     * Inferred by the presence of `background` or `backgroundCube` materials.
+     * @default false
+     */
+    background: boolean;
+
+    /**
+     * ### Keep `WebGLClipping` subsystem?
+     * `true` if your application uses clipping planes.
+     *
+     * Inferred by the presence of `clipping_*` includes.
+     * @default false
+     */
+    clipping: boolean;
+
+    /**
+     * ### Keep `WebGLEnvironments` subsystem?
+     * `true` if your application uses materials with environment maps or
+     * `Scene.environment` for physical materials.
+     *
+     * Inferred by the presence of `envmap_common_pars_fragment` include *OR*
+     * when the `background` subsystem is also `true`.
+     * @default false
+     */
+    environments: boolean;
+
+    /**
+     * ### Keep `WebGLLights` subsystem?
+     * Set to `true` if your application uses light-responsive materials.
+     *
+     * Inferred by the presence of light-responsive materials *OR* when the
+     * `shadows` subsystem is also `true`.
+     * @default false
+     */
+    lights: boolean;
+
+    /**
+     * ### Keep `WebGLMorphtargets` subsystem?
+     * `true` if your application uses morphtargets.
+     *
+     * Inferred by the presence of `morph*` includes.
+     * @default false
+     */
+    morphtargets: boolean;
+
+    /**
+     * ### Keep `WebGLShadowMap` subsystem?
+     * `true` if your application uses geometry which casts shadows.
+     *
+     * Inferred by the presence of `shadow*` includes *OR* the presence of the
+     * `shadow` material.
+     * @default false
+     */
+    shadowmap: boolean;
+
+    /**
+     * ### Keep `WebGLTextures` subsystem?
+     * `true` if your application uses textures (like material maps).
+     *
+     * Inferred by the presence of `uv*` includes *OR* when any of the
+     * following subsystems are also `true`:
+     * - `background`
+     * - `environment`
+     * - `shadowmap`
+     * @default false
+     */
+    textures: boolean;
+  };
 }
 
 export interface UserOptions extends Partial<
-  Omit<Options, 'materials' | 'includes'>
+  Omit<Options, 'includes' | 'materials' | 'subsystems'>
 > {
   /**
    * ### THREE include(s) to keep in the bundle **(whitelist)**
    *
-   * Most `includes` depend on other `includes` to function properly, therefore
+   * Most `includes` require other `includes` to function properly, therefore
    * it is recommended to use the `features` option instead for convenience.
    * @default []
    */
@@ -116,139 +152,215 @@ export interface UserOptions extends Partial<
   materials?: MaterialName[] | MaterialName;
 }
 
-const includeSet = new Set(includes);
-
 /**
+ * `Object.hasown()`
  * @param object Target object
  * @param property Property to check
  * @returns `true` if `property` is a property of `object`
  */
-function hasOwn(object: object, property: string) {
+function hasOwn<T extends object>(
+  object: T,
+  property: PropertyKey,
+): property is keyof T {
   return Object.prototype.hasOwnProperty.call(object, property);
 }
 
 export const parseOptions = (options: UserOptions): Options => {
   const userIncludes: Set<IncludeName> = new Set();
-
   const userMaterials: Set<MaterialName> = new Set();
+
+  /**
+   * Add includes to `userIncludes` and materials to `userMaterials`
+   * @param optionName Array property keys of `UserOptions`
+   * @param optionValue Values of `optionName`
+   * @param addOption Callback function to execute with `optionValue`
+   */
+  function parseOption<T extends string>(
+    optionName: 'includes' | 'features' | 'materials',
+    optionValue: T | T[] | undefined,
+    addOption: (array: T[]) => void,
+  ) {
+    if (optionValue === undefined) return;
+
+    if (typeof optionValue === 'string') {
+      addOption([optionValue]);
+      return;
+    }
+
+    if (Array.isArray(optionValue)) {
+      addOption(optionValue);
+      return;
+    }
+
+    throw new Error(
+      `Invalid ${optionName} value: "${JSON.stringify(optionValue)}"`,
+    );
+  }
 
   /**
    * Adds each `include` of `includeArray` to `userIncludes` set.
    * @param includeArray Array of includes to keep in the bundle
    */
-  function addIncludes(includeArray: IncludeName[]): void {
+  function addIncludes(includeArray: readonly string[]) {
     for (const include of includeArray) {
-      if (includeSet.has(include)) {
-        userIncludes.add(include);
-        continue;
+      if (!hasOwn(includes, include)) {
+        throw new Error(`Unrecognized include: "${include}"`);
       }
-      throw new Error(`Unrecognized include: "${include}"`);
+
+      const metadata = includes[include];
+
+      switch (metadata.status) {
+        case 'future':
+          console.warn(
+            `Include "${include}" is not available in THREE r${revision}. It was introduced in r${metadata.since}.`,
+          );
+          continue;
+
+        case 'available':
+          userIncludes.add(include);
+          break;
+
+        case 'deprecated':
+          console.warn(
+            `Include "${include}" was deprecated in THREE r${metadata.deprecated} and is not available in r${revision}.`,
+          );
+          break;
+      }
     }
   }
 
-  if (options.includes !== undefined) {
-    if (Array.isArray(options.includes)) {
-      addIncludes(options.includes);
-    } else if (typeof options.includes === 'string') {
-      addIncludes([options.includes]);
-    } else {
-      throw new Error(
-        `Invalid includes value: "${JSON.stringify(options.includes)}"`,
-      );
-    }
-  }
+  parseOption('includes', options.includes, addIncludes);
 
   /**
    * Adds `featureArray` includes to `userIncludes` set.
    * @param featureArray Array of features to keep in the bundle
    */
-  function addFeatures(featureArray: FeatureName[]): void {
+  function addFeatures(featureArray: readonly string[]): void {
     for (const feature of featureArray) {
       if (hasOwn(features, feature)) {
-        addIncludes(features[feature]);
+        for (const include of features[feature]) userIncludes.add(include);
         continue;
       }
       throw new Error(`Unrecognized feature: "${feature}"`);
     }
   }
 
-  if (options.features !== undefined) {
-    if (Array.isArray(options.features)) {
-      addFeatures(options.features);
-    } else if (typeof options.features === 'string') {
-      addFeatures([options.features]);
-    } else {
-      throw new Error(
-        `Invalid features value: "${JSON.stringify(options.features)}`,
-      );
-    }
-  }
+  parseOption('features', options.features, addFeatures);
 
   /**
-   * Adds `materialArray` to `userMaterials` set.
+   * Adds each `material` of `materialArray` to `userMaterials` set.
    * Adds `materialArray` includes to `userIncludes` set.
    * @param materialArray Array of materials to keep in the bundle
    */
-  function addMaterials(materialArray: MaterialName[]): void {
+  function addMaterials(materialArray: readonly string[]): void {
     for (const material of materialArray) {
-      if (hasOwn(materials, material)) {
-        userMaterials.add(material);
-        addIncludes(materials[material]);
-        continue;
+      if (!hasOwn(materials, material)) {
+        throw new Error(`Unrecognized material: "${material}"`);
       }
-      throw new Error(`Unrecognized material: "${material}"`);
+
+      const metadata = materials[material];
+
+      switch (metadata.status) {
+        case 'future':
+          console.warn(
+            `Material "${material}" is not available in THREE r${revision}. It was introduced in r${metadata.since}.`,
+          );
+          continue;
+
+        case 'available':
+          userMaterials.add(material);
+          for (const include of metadata.includes) userIncludes.add(include);
+          break;
+
+        case 'deprecated':
+          console.warn(
+            `Material "${material}" was deprecated in THREE r${metadata.deprecated} and is not available in r${revision}.`,
+          );
+          break;
+      }
     }
   }
 
-  if (options.materials !== undefined) {
-    if (Array.isArray(options.materials)) {
-      addMaterials(options.materials);
-    } else if (typeof options.materials === 'string') {
-      addMaterials([options.materials]);
-    } else {
-      throw new Error(
-        `Invalid materials value: "${JSON.stringify(options.materials)}"`,
-      );
-    }
+  parseOption('materials', options.materials, addMaterials);
+
+  const subsystems: Options['subsystems'] = {
+    background: false,
+    clipping: false,
+    environments: false,
+    lights: false,
+    morphtargets: false,
+    shadowmap: false,
+    textures: false,
+  };
+
+  if (userMaterials.has('background') || userMaterials.has('backgroundCube')) {
+    subsystems.background =
+      subsystems.environments =
+      subsystems.textures =
+        true;
   }
 
-  const background = !!options.background;
-
-  let clipping = !!options.clipping;
-
-  let environment = !!options.environment;
-
-  let shadows = !!options.shadows;
-
-  let textures = !!options.textures;
-
-  if (background) textures = true;
-
-  if (clipping || userIncludes.has('clipping_planes_vertex')) {
-    clipping = true;
+  if (
+    userIncludes.has('clipping_planes_fragment') ||
+    userIncludes.has('clipping_planes_pars_fragment') ||
+    userIncludes.has('clipping_planes_pars_vertex') ||
+    userIncludes.has('clipping_planes_vertex')
+  ) {
+    subsystems.clipping = true;
     addFeatures(['clipping']);
   }
 
-  /** `WebGLShadowMap` uses `MeshDepthMaterial` and `MeshDistanceMaterial` */
-  if (shadows || userIncludes.has('shadowmap_vertex')) {
-    shadows = true;
-    textures = true;
-    addFeatures(['shadows']);
-    addMaterials(['depth', distanceMaterial, 'shadow']);
+  if (
+    userIncludes.has('morphcolor_vertex') ||
+    userIncludes.has('morphinstance_vertex') ||
+    userIncludes.has('morphnormal_vertex') ||
+    userIncludes.has('morphtarget_pars_vertex') ||
+    userIncludes.has('morphtarget_vertex')
+  ) {
+    subsystems.morphtargets = true;
+    // addFeatures(['morphtargets']);
   }
 
-  /** Every material (except `RawShaderMaterial`) requires these */
+  /** `WebGLShadowMap` uses `MeshDepthMaterial` and `MeshDistanceMaterial` */
+  if (
+    userIncludes.has('shadowmap_pars_fragment') ||
+    userIncludes.has('shadowmap_pars_vertex') ||
+    userIncludes.has('shadowmap_vertex') ||
+    userIncludes.has('shadowmask_pars_fragment') ||
+    userMaterials.has('shadow')
+  ) {
+    subsystems.lights = subsystems.shadowmap = subsystems.textures = true;
+    addFeatures(['shadows']);
+    addMaterials(['depth', distanceMaterial /*, 'shadow'*/]);
+  }
+
+  /** Every material (except `RawShaderMaterial`) requires colorspace */
   if (userMaterials.size > 0) addFeatures(['colorspace']);
 
-  /** Standard and Physical materials use the same vertex & fragment shaders */
+  /** Standard & Physical materials use the same vertex & fragment shaders */
   if (userMaterials.has('standard') || userMaterials.has('physical')) {
     addMaterials(['physical', 'standard']);
   }
 
+  /** Many materials require light */
+  if (
+    subsystems.shadowmap ||
+    userMaterials.has('lambert') ||
+    userMaterials.has('phong') ||
+    userMaterials.has('standard') ||
+    userMaterials.has('toon') ||
+    userMaterials.has('shadow')
+  ) {
+    subsystems.lights = true;
+  }
+
   /** User requires environment maps on materials */
-  if (environment || userIncludes.has('envmap_common_pars_fragment')) {
-    environment = true;
-    textures = true;
+  if (
+    subsystems.environments ||
+    userIncludes.has('cube_uv_reflection_fragment') ||
+    userIncludes.has('envmap_common_pars_fragment')
+  ) {
+    subsystems.environments = subsystems.textures = true;
     addFeatures(['envmap']);
 
     if (
@@ -256,7 +368,11 @@ export const parseOptions = (options: UserOptions): Options => {
       userMaterials.has('lambert') ||
       userMaterials.has('phong')
     ) {
-      addIncludes(['envmap_physical_pars_fragment', 'lights_fragment_maps']);
+      addIncludes([
+        'cube_uv_reflection_fragment',
+        'envmap_physical_pars_fragment',
+        'lights_fragment_maps',
+      ]);
     }
 
     if (
@@ -273,15 +389,22 @@ export const parseOptions = (options: UserOptions): Options => {
     }
   }
 
+  if (
+    userIncludes.has('uv_pars_fragment') ||
+    userIncludes.has('uv_pars_vertex') ||
+    userIncludes.has('uv_vertex') ||
+    userIncludes.has('uv2_pars_fragment') ||
+    userIncludes.has('uv2_pars_vertex') ||
+    userIncludes.has('uv2_vertex')
+  ) {
+    subsystems.textures = true;
+  }
+
   return {
     colorKeywords: !!options.colorKeywords,
     jsonMethods: !!options.jsonMethods,
-    clipping,
-    background,
-    environment,
-    shadows,
-    textures,
     xr: !!options.xr,
+    subsystems,
     materials: userMaterials,
     includes: userIncludes,
   };
