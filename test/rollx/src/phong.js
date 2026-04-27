@@ -1,7 +1,12 @@
 import { MeshPhongMaterial } from 'three';
 
-import { createScene } from '../../app';
+import { createScene, light, renderer, scene } from '../../app';
 import { equirect } from './imports/create-equirect';
+
+scene.add(light);
+
+/** Test the `WebXRManager` stub console warning */
+renderer.xr.enabled = true;
 
 equirect.then((texture) => {
   createScene({

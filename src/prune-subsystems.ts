@@ -3,8 +3,6 @@ import type { Options } from './options';
 
 import { WebGLBackground } from './stubs/background';
 import { WebGLClipping } from './stubs/clipping';
-import { WebGLCubeMaps } from './stubs/cubemaps';
-import { WebGLCubeUVMaps } from './stubs/cubeuvmaps';
 import { WebGLEnvironments } from './stubs/environments';
 import { WebGLLights } from './stubs/lights';
 import { WebGLMorphtargets } from './stubs/morphtargets';
@@ -32,46 +30,56 @@ export function pruneSubsystems(code: string, options: Options): string {
    */
   const subsystemReplacer: Replacer = (match, type, subsystem) => {
     if (type === 'XR') {
-      if (subsystem === 'Manager' && !options.xr) return WebXRManager;
+      if (subsystem === 'Manager' && !options.xr) {
+        return WebXRManager(options.debug);
+      }
       return match;
     }
 
     /** `type` is `GL` */
     switch (subsystem) {
       case 'Background':
-        if (!options.subsystems.background) return WebGLBackground;
+        if (!options.subsystems.background) {
+          return WebGLBackground(options.debug);
+        }
         break;
 
       case 'Clipping':
-        if (!options.subsystems.clipping) return WebGLClipping;
-        break;
-
-      case 'CubeUVMaps':
-        if (!options.subsystems.environments) return WebGLCubeUVMaps;
+        if (!options.subsystems.clipping) {
+          return WebGLClipping(options.debug);
+        }
         break;
 
       case 'CubeMaps':
-        if (!options.subsystems.environments) return WebGLCubeMaps;
-        break;
-
+      case 'CubeUVMaps':
       case 'Environments':
-        if (!options.subsystems.environments) return WebGLEnvironments;
+        if (!options.subsystems.environments) {
+          return WebGLEnvironments(options.debug, subsystem);
+        }
         break;
 
       case 'Lights':
-        if (!options.subsystems.lights) return WebGLLights;
+        if (!options.subsystems.lights) {
+          return WebGLLights(options.debug);
+        }
         break;
 
       case 'Morphtargets':
-        if (!options.subsystems.morphtargets) return WebGLMorphtargets;
+        if (!options.subsystems.morphtargets) {
+          return WebGLMorphtargets(options.debug);
+        }
         break;
 
       case 'ShadowMap':
-        if (!options.subsystems.shadowmap) return WebGLShadowMap;
+        if (!options.subsystems.shadowmap) {
+          return WebGLShadowMap(options.debug);
+        }
         break;
 
       case 'Textures':
-        if (!options.subsystems.textures) return WebGLTextures;
+        if (!options.subsystems.textures) {
+          return WebGLTextures(options.debug);
+        }
         break;
 
       default:

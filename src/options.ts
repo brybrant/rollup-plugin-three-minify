@@ -5,11 +5,19 @@ import {
   type FeatureName,
   materials,
   type MaterialName,
+  cubeMaterial,
   distanceMaterial,
   revision,
 } from './const';
 
 export interface Options {
+  /**
+   * ### Enable debug mode?
+   * Useful in development. When enabled:
+   * - Pruned subsystems will emit console warnings to explain removal.
+   */
+  debug: boolean;
+
   /**
    * ### Include `THREE.Color.NAMES`?
    * @default false
@@ -293,7 +301,7 @@ export const parseOptions = (options: UserOptions): Options => {
     textures: false,
   };
 
-  if (userMaterials.has('background') || userMaterials.has('backgroundCube')) {
+  if (userMaterials.has('background') || userMaterials.has(cubeMaterial)) {
     subsystems.background =
       subsystems.environments =
       subsystems.textures =
@@ -318,7 +326,6 @@ export const parseOptions = (options: UserOptions): Options => {
     userIncludes.has('morphtarget_vertex')
   ) {
     subsystems.morphtargets = true;
-    // addFeatures(['morphtargets']);
   }
 
   /** `WebGLShadowMap` uses `MeshDepthMaterial` and `MeshDistanceMaterial` */
@@ -331,7 +338,7 @@ export const parseOptions = (options: UserOptions): Options => {
   ) {
     subsystems.lights = subsystems.shadowmap = subsystems.textures = true;
     addFeatures(['shadows']);
-    addMaterials(['depth', distanceMaterial /*, 'shadow'*/]);
+    addMaterials(['depth', distanceMaterial]);
   }
 
   /** Every material (except `RawShaderMaterial`) requires colorspace */
@@ -344,12 +351,14 @@ export const parseOptions = (options: UserOptions): Options => {
 
   /** Many materials require light */
   if (
+    /** Perhaps user wants THREE lights on `RawShaderMaterial`? */
+    userIncludes.has('lights_pars_begin') ||
     subsystems.shadowmap ||
     userMaterials.has('lambert') ||
     userMaterials.has('phong') ||
+    userMaterials.has('shadow') ||
     userMaterials.has('standard') ||
-    userMaterials.has('toon') ||
-    userMaterials.has('shadow')
+    userMaterials.has('toon')
   ) {
     subsystems.lights = true;
   }
@@ -390,6 +399,8 @@ export const parseOptions = (options: UserOptions): Options => {
   }
 
   if (
+    userIncludes.has('transmission_fragment') ||
+    userIncludes.has('transmission_pars_fragment') ||
     userIncludes.has('uv_pars_fragment') ||
     userIncludes.has('uv_pars_vertex') ||
     userIncludes.has('uv_vertex') ||
@@ -401,6 +412,7 @@ export const parseOptions = (options: UserOptions): Options => {
   }
 
   return {
+    debug: !!options.debug,
     colorKeywords: !!options.colorKeywords,
     jsonMethods: !!options.jsonMethods,
     xr: !!options.xr,

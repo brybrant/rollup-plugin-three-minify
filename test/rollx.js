@@ -56,38 +56,47 @@ function createConfig(name, options) {
 
 const configs = [
   createConfig('basic', {
+    debug: true,
     features: 'map',
     materials: 'basic',
   }),
   createConfig('depth', {
+    debug: true,
     features: ['alphamap', 'alphatest'],
     materials: 'depth',
   }),
   createConfig('lambert', {
+    debug: true,
     features: 'emissivemap',
     materials: 'lambert',
   }),
   createConfig('normal', {
+    debug: true,
     features: ['dithering', 'normalmap'],
     materials: 'normal',
   }),
   createConfig('phong', {
+    debug: true,
     features: 'envmap',
     materials: 'phong',
   }),
   createConfig('physical', {
+    debug: true,
     features: 'envmap',
     materials: ['physical', revision < 146 ? 'cube' : 'backgroundCube'],
   }),
   createConfig('shadow', {
+    debug: true,
     features: ['bumpmap', 'shadows'],
     materials: ['lambert', 'phong'],
   }),
   createConfig('standard', {
+    debug: true,
     features: 'envmap',
     materials: 'standard',
   }),
   createConfig('toon', {
+    debug: true,
     features: 'lightmap',
     materials: 'toon',
   }),

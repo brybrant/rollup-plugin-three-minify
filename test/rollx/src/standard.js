@@ -1,7 +1,12 @@
 import { MeshStandardMaterial } from 'three';
 
-import { createScene } from '../../app';
+import { createScene, geometry, light, scene } from '../../app';
 import { cube } from './imports/create-cube';
+
+/** Test the `WebGLMorphtargets` stub console warning */
+geometry.morphAttributes.position = [];
+
+scene.add(light);
 
 cube.then((texture) => {
   createScene({

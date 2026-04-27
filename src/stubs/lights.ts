@@ -1,23 +1,25 @@
-/** ### `WebGLLights` stub. */
-export const WebGLLights = `
+import { name } from '../../package.json';
+
+import type { Options } from '../options';
+
+const warning = JSON.stringify(`[${name}]:
+Support for lights has been removed.
+If you wish to use lights then you must include the "shadows" feature or at least one of the following materials in the plugin options:
+- "lambert"
+- "phong"
+- "shadow"
+- "standard"
+- "toon"`);
+
+/**
+ * @param debug Emit console warning?
+ * @returns `WebGLLights` stub
+ */
+export const WebGLLights = (debug: Options['debug']) => `
 function WebGLLights() {
   const state = {
-    get version() {
-      return 0;
-    },
+    get version() { return 0 },
     set version(number) {},
-    hash: {
-      directionalLength: -1,
-      pointLength: -1,
-      spotLength: -1,
-      rectAreaLength: -1,
-      hemiLength: -1,
-      numDirectionalShadows: -1,
-      numPointShadows: -1,
-      numSpotShadows: -1,
-      numSpotMaps: -1,
-      numLightProbes: -1,
-    },
     ambient: [ 0, 0, 0 ],
     probe: [],
     directional: [],
@@ -42,8 +44,18 @@ function WebGLLights() {
   };
 
   return {
-    setup: function() {},
-    setupView: function() {},
+    setup: function (${debug ? ' lights ' : ''}) {
+      ${
+        debug
+          ? `
+        if ( lights.length > 0 ) {
+          console.warn(${warning});
+          this.setup = function () {};
+        }`
+          : ''
+      }
+    },
+    setupView: function () {},
     state: state,
   };
 }

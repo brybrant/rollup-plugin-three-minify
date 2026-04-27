@@ -328,8 +328,8 @@ export const features = {
   tonemapping: ['tonemapping_fragment', 'tonemapping_pars_fragment'],
   transmission: [
     'common',
-    'transmission_pars_fragment',
     'transmission_fragment',
+    'transmission_pars_fragment',
     'worldpos_vertex',
   ],
 } satisfies Record<string, IncludeName[]>;
@@ -355,6 +355,9 @@ const coreLights = [
 ] as const;
 
 const coreOpaque = getIncludes(['output_fragment', 'opaque_fragment']);
+
+/** `ShaderLib` key for `cube` material was renamed in THREE r146 */
+export const cubeMaterial = revision < 146 ? 'cube' : 'backgroundCube';
 
 /** `ShaderLib` key for `distance` material was renamed in THREE r182 */
 export const distanceMaterial = revision < 182 ? 'distanceRGBA' : 'distance';

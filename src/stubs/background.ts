@@ -1,7 +1,20 @@
-import { revision } from '../const';
+import { name } from '../../package.json';
 
-/** ### `WebGLBackground` stub. */
-export const WebGLBackground = `
+import { cubeMaterial, revision } from '../const';
+
+import type { Options } from '../options';
+
+const warning = JSON.stringify(`[${name}]:
+Support for textures on Scene.background property has been removed.
+If you wish to use background textures then you must include the appropriate background material in the plugin options:
+- "background" for flat textures
+- "${cubeMaterial}" for cube textures`);
+
+/**
+ * @param debug Emit console warning?
+ * @returns `WebGLBackground` stub
+ */
+export const WebGLBackground = (debug: Options['debug']) => `
 function WebGLBackground(
   renderer,
   ${revision < 183 ? 'cubemaps' : 'environments'},
@@ -26,37 +39,59 @@ function WebGLBackground(
     }, alpha, premultipliedAlpha );
   }
 
+  ${debug ? 'let warned = false;' : ''}
+
   return {
-    getClearColor: function() {
+    getClearColor: function () {
       return clearColor;
     },
-    setClearColor: function( color, alpha = 1 ) {
+    setClearColor: function ( color, alpha = 1 ) {
       clearColor.set( color );
       clearAlpha = alpha;
       setClear( clearColor, clearAlpha );
     },
-    getClearAlpha: function() {
+    getClearAlpha: function () {
       return clearAlpha;
     },
-    setClearAlpha: function( alpha ) {
+    setClearAlpha: function ( alpha ) {
       clearAlpha = alpha;
       setClear( clearColor, clearAlpha );
     },
-    render: function() {
-      setClear( clearColor, clearAlpha );
+    render: function ( ${revision < 164 ? 'renderList, ' : ''}scene ) {
+      let forceClear = false;
+      let background = scene.isScene === true ? scene.background : null;
 
-      if ( renderer.autoClear ) {
-        // buffers might not be writable which is required to ensure a correct clear
+      if ( background && background.isTexture ) {
+        ${
+          debug
+            ? `if ( !warned ) { console.warn(${warning}); warned = true }`
+            : ''
+        }
+        background = null;
+      }
 
+      if ( background === null ) {
+        setClear( clearColor, clearAlpha );
+      } else if ( background && background.isColor ) {
+        setClear( background, 1 );
+        forceClear = true;
+      }
+
+      if ( renderer.autoClear || forceClear ) {
+        ${
+          revision < 165
+            ? ''
+            : `
         state.buffers.depth.setTest( true );
         state.buffers.depth.setMask( true );
-        state.buffers.color.setMask( true );
+        state.buffers.color.setMask( true );`
+        }
 
         renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );
       }
     },
-    addToRenderList: function() {},
-    dispose: function() {},
+    addToRenderList: function () {},
+    dispose: function () {},
   };
 }
 `;

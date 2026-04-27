@@ -1,7 +1,10 @@
 import { MeshNormalMaterial } from 'three';
 
-import { createScene } from '../../app';
+import { createScene, renderer } from '../../app';
 import { map } from './imports/create-map';
+
+/** Test the `WebGLClipping` stub console warning */
+renderer.localClippingEnabled = true;
 
 map.then((texture) => {
   createScene({

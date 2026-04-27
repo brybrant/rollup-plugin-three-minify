@@ -21,7 +21,10 @@ await build({
   plugins: [
     globalPlugin,
     {
-      ...threeMinifyPlugin({ materials: 'physical' }),
+      ...threeMinifyPlugin({
+        debug: true,
+        materials: 'physical',
+      }),
       /**
        * `apply` property is redundant here because this is always in `build`
        * phase, but included for demonstration only.
