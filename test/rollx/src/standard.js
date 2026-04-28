@@ -8,11 +8,11 @@ geometry.morphAttributes.position = [];
 
 scene.add(light);
 
-cube.then((texture) => {
+cube.then((envMap) => {
   createScene({
     label: 'MeshStandardMaterial\n+ envMap (cube)',
     material: new MeshStandardMaterial({
-      envMap: texture,
+      envMap,
       metalness: 0.5,
       roughness: 0.25,
     }),
