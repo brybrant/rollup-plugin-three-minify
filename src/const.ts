@@ -6,7 +6,7 @@ import { REVISION } from 'three';
  * For example, if `0.150.1` is installed, then `revision` will be `150`.
  *
  * This plugin is backwards-compatible with THREE revisions down to 135.
- * It might work with earlier revisions but I don't care to test that.
+ * It might work with earlier revisions but I will not guarantee that.
  */
 export const revision = Number(REVISION);
 

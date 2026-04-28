@@ -2,19 +2,19 @@ import { BackSide, PlaneGeometry, Mesh, MeshPhongMaterial } from 'three';
 
 import { map } from './create-map';
 
-export const shadowPlane = map.then((texture) => {
-  const geometry = new PlaneGeometry(640, 40);
+export const shadowPlane = map.then((bumpMap) => {
+  const geometry = new PlaneGeometry(128, 8); // Texture is 16:1
 
   const material = new MeshPhongMaterial({
-    bumpMap: texture,
+    bumpMap,
     side: BackSide,
   });
 
-  const mesh = new Mesh(geometry, material);
+  const plane = new Mesh(geometry, material);
 
-  mesh.position.set(0, 0, 10);
+  plane.position.setZ(2);
 
-  mesh.receiveShadow = true;
+  plane.receiveShadow = true;
 
-  return mesh;
+  return plane;
 });

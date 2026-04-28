@@ -9,25 +9,25 @@ import {
 
 export const scene = new Scene();
 
-export const geometry = new TorusKnotGeometry(5, 2, 128, 16, 4, 6);
+export const geometry = new TorusKnotGeometry();
 
-/** Older revisions of THREE require `uv2` attribute for lightMap and aoMap */
+/** Older revisions require `uv2` attribute for lightMap and aoMap */
 if (window._Revision < 151) geometry.attributes.uv2 = geometry.attributes.uv;
 
-export const camera = new PerspectiveCamera(
+const camera = new PerspectiveCamera(
   60,
   window.innerWidth / window.innerHeight,
-  10,
-  40,
+  1,
+  6,
 );
 
-camera.position.set(0, 0, -20);
+camera.position.setZ(-4);
 
 camera.lookAt(0, 0, 0);
 
 export const light = new DirectionalLight(0xffffff, 1);
 
-light.position.set(0, 10, -15);
+light.position.set(0, 2, -3);
 
 export const renderer = new WebGLRenderer();
 
