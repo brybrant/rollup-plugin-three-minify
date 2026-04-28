@@ -77,7 +77,7 @@ const configs = [
   }),
   createConfig('phong', {
     debug: true,
-    features: 'envmap',
+    features: ['envmap', 'lightmap'],
     materials: 'phong',
   }),
   createConfig('physical', {
@@ -97,7 +97,6 @@ const configs = [
   }),
   createConfig('toon', {
     debug: true,
-    features: 'lightmap',
     materials: 'toon',
   }),
 ];

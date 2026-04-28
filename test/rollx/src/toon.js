@@ -24,10 +24,7 @@ map.then((texture) => {
   gradientMap.needsUpdate = true;
 
   createScene({
-    label: 'MeshToonMaterial\n+ gradientMap\n+ lightMap',
-    material: new MeshToonMaterial({
-      gradientMap: gradientMap,
-      lightMap: texture,
-    }),
+    label: 'MeshToonMaterial\n+ gradientMap',
+    material: new MeshToonMaterial({ gradientMap }),
   });
 });
