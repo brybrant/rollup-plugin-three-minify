@@ -2,10 +2,10 @@
 import { REVISION } from 'three';
 
 /**
- * This refers to the current (semver) "MINOR" version of THREE installed.
+ * This refers to the current (semver) "MINOR" version of Three.js installed.
  * For example, if `0.150.1` is installed, then `revision` will be `150`.
  *
- * This plugin is backwards-compatible with THREE revisions down to 135.
+ * This plugin is backwards-compatible with Three.js revisions down to 135.
  * It might work with earlier revisions but I will not guarantee that.
  */
 export const revision = Number(REVISION);
@@ -356,10 +356,10 @@ const coreLights = [
 
 const coreOpaque = getIncludes(['output_fragment', 'opaque_fragment']);
 
-/** `ShaderLib` key for `cube` material was renamed in THREE r146 */
+/** `ShaderLib` key for `cube` material was renamed in Three.js r146 */
 export const cubeMaterial = revision < 146 ? 'cube' : 'backgroundCube';
 
-/** `ShaderLib` key for `distance` material was renamed in THREE r182 */
+/** `ShaderLib` key for `distance` material was renamed in Three.js r182 */
 export const distanceMaterial = revision < 182 ? 'distanceRGBA' : 'distance';
 
 const distanceIncludes = [...coreVertex, 'common', 'worldpos_vertex'] as const;

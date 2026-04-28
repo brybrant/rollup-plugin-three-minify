@@ -13,7 +13,7 @@ import { minifyShaders } from './minify-shaders';
 const threeRegex = /\/node_modules\/three\/build\/three\.[\w.]+$/;
 
 /**
- * Minify GLSL code in THREE.js and remove redundant `WebGLRenderer` subsystems
+ * Minify GLSL code in Three.js and remove redundant `WebGLRenderer` subsystems
  * @param userOptions See [options](./options.ts)
  * @returns Rollup plugin
  */
@@ -26,7 +26,7 @@ export default function (userOptions: UserOptions = {}): Plugin {
       handler(code, id) {
         if (id.endsWith('.min.js')) {
           console.warn(
-            `"${name}" does not work with minified versions of THREE.js`,
+            `"${name}" does not work with minified versions of Three.js`,
           );
           return null;
         }
@@ -58,8 +58,8 @@ export default function (userOptions: UserOptions = {}): Plugin {
         code = pruneSubsystems(code, options);
 
         /**
-         * ### Set of THREE includes to discard from the bundle **(blacklist)**
-         * *(Opposite of `Options['includes']`)*
+         * ### Set of Three.js includes to discard from the bundle
+         * (Opposite of `Options['includes']`)
          */
         const discardIncludes: Set<IncludeName> = new Set();
 

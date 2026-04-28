@@ -22,12 +22,14 @@ export interface Options {
 
   /**
    * ### Include `THREE.Color.NAMES`?
+   * Set this option to `true` if your application will create colors by name.
    * @default false
    */
   colorKeywords: boolean;
 
   /**
-   * ### Include `toJSON` and `fromJSON` methods on THREE classes?
+   * ### Include `toJSON` and `fromJSON` methods on Three.js classes?
+   * Set this option to `true` if your application will use these JSON methods.
    * @default false
    */
   jsonMethods: boolean;
@@ -40,13 +42,13 @@ export interface Options {
   xr: boolean;
 
   /**
-   * ### Set of THREE includes to keep in the bundle **(whitelist)**
+   * ### Set of Three.js includes to keep in the bundle **(whitelist)**
    * *(Includes not in this set will have shader code discarded!)*
    */
   includes: Set<IncludeName>;
 
   /**
-   * ### Set of THREE materials to keep in the bundle **(whitelist)**
+   * ### Set of Three.js materials to keep in the bundle **(whitelist)**
    * *(Materials not in this set will have shader code discarded!)*
    */
   materials: Set<MaterialName>;
@@ -75,8 +77,9 @@ export interface Options {
      * `true` if your application uses materials with environment maps or
      * `Scene.environment` for physical materials.
      *
-     * Inferred by the presence of `envmap_common_pars_fragment` include *OR*
-     * when the `background` subsystem is also `true`.
+     * Inferred by the presence of `envmap_common_pars_fragment` or
+     * `cube_uv_reflection_fragment` includes *OR* when the `background`
+     * subsystem is also `true`.
      * @default false
      */
     environments: boolean;
@@ -112,7 +115,7 @@ export interface Options {
 
     /**
      * ### Keep `WebGLTextures` subsystem?
-     * `true` if your application uses textures (like material maps).
+     * `true` if your application uses textures (such as material maps).
      *
      * Inferred by the presence of `uv*` includes *OR* when any of the
      * following subsystems are also `true`:
@@ -141,16 +144,21 @@ export interface UserOptions extends Partial<
   textures?: boolean;
 
   /**
-   * ### THREE include(s) to keep in the bundle **(whitelist)**
+   * ### Three.js include(s) to keep in the bundle **(whitelist)**
    *
-   * Most `includes` require other `includes` to function properly, therefore
-   * it is recommended to use the `features` option instead for convenience.
+   * I use the word "include" to mean keys of `ShaderChunk`, because they
+   * correlate to pieces of GLSL code which are injected via `#include <xyz>`
+   * directives at runtime by `WebGLProgram`.
+   *
+   * Most `includes` require other "sibling" `includes` to function properly,
+   * therefore it is recommended to use the `features` option instead for
+   * convenience, but you can use this option for precise control.
    * @default []
    */
   includes?: IncludeName[] | IncludeName;
 
   /**
-   * ### THREE feature(s) to keep in this bundle **(whitelist)**
+   * ### Three.js feature(s) to keep in the bundle **(whitelist)**
    *
    * Each "feature" refers to a group of interdependent `includes` and is thus
    * a safer way to define the requirements of your application.
@@ -159,16 +167,14 @@ export interface UserOptions extends Partial<
   features?: FeatureName[] | FeatureName;
 
   /**
-   * ### THREE material(s) to keep in the bundle **(whitelist)**
+   * ### Three.js material(s) to keep in the bundle **(whitelist)**
    *
-   * Every THREE material (except `RawShaderMaterial`) requires a specific set
-   * of `includes` to render.
+   * Every Three.js material (except `RawShaderMaterial`) requires a specific
+   * set of `includes` to render, otherwise the renderer will crash.
    *
-   * This plugin will keep only the essential `includes` for the material(s) in
-   * this option.
-   *
-   * Some material features will fail silently unless you also specify them
-   * in the `features` option.
+   * This plugin will keep only the necessary `includes` for each material in
+   * this option. Some material features will fail unless you specify them in
+   * the `features` option.
    * @default []
    */
   materials?: MaterialName[] | MaterialName;
@@ -234,7 +240,7 @@ export const parseOptions = (options: UserOptions): Options => {
       switch (metadata.status) {
         case 'future':
           console.warn(
-            `Include "${include}" is not available in THREE r${revision}. It was introduced in r${metadata.since}.`,
+            `Include "${include}" is not available in Three.js r${revision}. It was introduced in r${metadata.since}.`,
           );
           continue;
 
@@ -244,7 +250,7 @@ export const parseOptions = (options: UserOptions): Options => {
 
         case 'deprecated':
           console.warn(
-            `Include "${include}" was deprecated in THREE r${metadata.deprecated} and is not available in r${revision}.`,
+            `Include "${include}" was deprecated in Three.js r${metadata.deprecated} and is not available in r${revision}.`,
           );
           break;
       }
@@ -285,7 +291,7 @@ export const parseOptions = (options: UserOptions): Options => {
       switch (metadata.status) {
         case 'future':
           console.warn(
-            `Material "${material}" is not available in THREE r${revision}. It was introduced in r${metadata.since}.`,
+            `Material "${material}" is not available in Three.js r${revision}. It was introduced in r${metadata.since}.`,
           );
           continue;
 
@@ -296,7 +302,7 @@ export const parseOptions = (options: UserOptions): Options => {
 
         case 'deprecated':
           console.warn(
-            `Material "${material}" was deprecated in THREE r${metadata.deprecated} and is not available in r${revision}.`,
+            `Material "${material}" was deprecated in Three.js r${metadata.deprecated} and is not available in r${revision}.`,
           );
           break;
       }
@@ -365,7 +371,7 @@ export const parseOptions = (options: UserOptions): Options => {
 
   /** Many materials require light */
   if (
-    /** Perhaps user wants THREE lights on `RawShaderMaterial`? */
+    /** Perhaps user wants Three.js lights on `RawShaderMaterial`? */
     userIncludes.has('lights_pars_begin') ||
     subsystems.shadowmap ||
     userMaterials.has('lambert') ||

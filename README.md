@@ -1,21 +1,20 @@
 # rollup-plugin-three-minify
 
-This plugin reduces the bundle size of applications which import Three.js as an internal dependency by:
+This plugin reduces the bundle size of applications which import [Three.js](https://threejs.org) as an internal dependency by:
 - Removing redundant `WebGLRenderer` subsystems
 - Removing redundant materials from `ShaderLib`
 - Removing redundant shaders from `ShaderChunk`
 - Rudimentary minification of GLSL code by removing redundant whitespace
 
-This plugin is backwards-compatible with THREE revisions down to 135. It might work with earlier revisions but I don't care to test that.
+This plugin is backwards-compatible with Three.js revisions down to 135. It might work with earlier revisions but I will not guarantee that.
 
 > [!TIP]
 > This Rollup plugin is also compatible with [Rolldown](https://rolldown.rs/) and [Vite](https://vite.dev/).
 
 ## Why?
 
-JavaScript minification tools like [terser](https://terser.org/) will not minify the contents of string literals such as GLSL code. This plugin however will minify the Three.js GLSL code used by your application, and remove any unused GLSL code.
-
-The `WebGLRenderer` class includes many subsystems which are not removed by tree-shaking. This plugin will determine the necessary subsystems based on your options, and remove any subsystems not required by your application.
+- JavaScript minification tools like [terser](https://terser.org/) will not minify the contents of string literals such as GLSL code. This plugin however will minify the Three.js GLSL code used by your application, and remove any unused GLSL code.
+- The `WebGLRenderer` class includes many subsystems which are not always required, but never removed by tree-shaking. This plugin will determine the necessary subsystems based on your [options](#options) and replace any unused subsystems with no-op stubs.
 
 > [!NOTE]
 > By default, this plugin will remove **ALL** GLSL code and optional subsystems. You must specify exactly which features and materials your application requires in the [options](#options) object.
@@ -79,7 +78,7 @@ import * as THREE from 'three';
 const scene = new THREE.Scene();
 
 const mesh = new THREE.Mesh(
-  new THREE.TorusKnotGeometry(5, 2, 128, 16, 4, 6),
+  new THREE.TorusKnotGeometry(),
   new THREE.MeshBasicMaterial(),
 );
 
@@ -87,8 +86,8 @@ scene.add(mesh);
 
 const camera = new THREE.PerspectiveCamera();
 
-camera.position.set(0, 0, -20);
-camera.lookAt(0, 0, 0);
+camera.position.setZ(-4);
+camera.lookAt(mesh.position);
 
 const renderer = new THREE.WebGLRenderer();
 renderer.render(scene, camera);
@@ -110,7 +109,7 @@ export default {
 };
 ```
 
-This Rollup configuration will remove all shaders and subsystems that are not required by `MeshBasicMaterial`. If you need to use other materials or features like textures or shadows then you must explicitly enable them in the [options](#options) object, otherwise it will not work!
+This Rollup configuration will remove all shaders and subsystems that are not required by `MeshBasicMaterial`. If you need to use other features like textures or shadows then you must specify that in the [options](#options) object!
 
 ## Options
 
@@ -124,8 +123,7 @@ This Rollup configuration will remove all shaders and subsystems that are not re
 
 Three.js contains an object called `colorKeywords` which maps CSS color names (see [named-color](https://mdn.io/named-color)) to color values, so you can create colors with CSS color names.
 
-> [!NOTE]
-> Set this option to `true` if your application will instantiate colors by name.
+Set this option to `true` if your application will create colors by name.
 
 #### Color Keyword Example
 ```ts
@@ -143,10 +141,9 @@ const hex: string = red.getHexString(); // "ff0000"
 <details>
 <summary>Description</summary>
 
-Many classes in Three.js include a `toJSON()` method which is automatically called when [`JSON.stringify()`](https://mdn.io/stringify) is used on an instance of that class, and is used to serialize its data. Some classes also have a `fromJSON()` method which is used to reverse the serialization (similar to the [`JSON.parse()`](http://mdn.io/parse) method).
+Many classes in Three.js include a `toJSON()` method which is used to safely serialize its data. Some classes also have a `fromJSON()` method which is used to reverse the serialization. These methods are analagous to [`JSON.stringify()`](http://mdn.io/stringify) and [`JSON.parse()`](http://mdn.io/parse).
 
-> [!NOTE]
-> Set this option to `true` if your application will use these JSON methods.
+Set this option to `true` if your application will use these JSON methods.
 
 #### JSON Example
 ```ts
@@ -166,8 +163,7 @@ const test: Sphere = new Sphere().fromJSON(data);
 
 The `WebGLRenderer` class includes a subsystem called `WebXRManager` which is responsible for managing XR stuff (like virtual reality).
 
-> [!NOTE]
-> Set this option to `true` if you are building an XR application.
+Set this option to `true` if you are building an XR application.
 </details>
 
 ### `materials`
@@ -180,12 +176,11 @@ The `WebGLRenderer` class includes a subsystem called `WebXRManager` which is re
 
 This option contains the material(s) to keep in the bundle **(whitelist)**
 
-> [!NOTE]
-> Every material (except `RawShaderMaterial`) requires a specific set of [`includes`](#includes) to render, otherwise the renderer will crash.
->
-> This plugin will keep only the necessary `includes` for each material in this option. Some material features will fail unless you specify them in the [`features`](#features) option.
+Every material (except `RawShaderMaterial`) requires a specific set of [`includes`](#includes) to render, otherwise the renderer will crash.
 
-Type `MaterialName`:
+This plugin will keep only the necessary `includes` for each material in this option. Some material features will fail unless you specify them in the [`features`](#features) option.
+
+#### Type `MaterialName`:
 - `background` (for "flat" textures on `Scene.background`)
 - `backgroundCube` (for cube or equirectangular textures on `Scene.background`, since revision >=146)
 - `cube` (same as `backgroundCube` for revisions <146)
@@ -216,10 +211,9 @@ Type `MaterialName`:
 
 This option contains the feature(s) to keep in the bundle **(whitelist)**
 
-> [!NOTE]
-> Each "feature" refers to a group of interdependent [`includes`](#includes) and is thus a safer way to define the requirements of your application.
+Each "feature" refers to a group of interdependent [`includes`](#includes) and is thus a safer way to define the requirements of your application.
 
-Type `FeatureName`:
+#### Type `FeatureName`:
 - `alphahash` (Alpha hashed transparency, since revision >=154)
 - `alphamap`
 - `alphatest`
@@ -234,15 +228,14 @@ Type `FeatureName`:
 - `emissivemap`
 - `envmap` (Environment map)
 - `fog`
-- `gradientmap` (for `MeshToonMaterial`) MIGHT BE REDUNDANT - CHECK OLD REVS
 - `iridescence` (for `MeshPhysicalMaterial` only, since revision >=141)
 - `lightmap`
 - `logdepthbuf` (Logarithmic depth buffer)
 - `map` (Diffuse map)
-- `metalnessmap` (for `MeshStandardMaterial`)
+- `metalnessmap`
 - `morphtargets`
 - `normalmap`
-- `roughnessmap` (for `MeshStandardMaterial`)
+- `roughnessmap`
 - `shadows` (If `WebGLRenderer.shadowMap.enabled` is set to `true`)
 - `skinning`
 - `specularmap`
@@ -262,12 +255,11 @@ Check [this handy compatibility table](https://threejs.org/manual/#en/material-t
 
 This option contains the include(s) to keep in the bundle **(whitelist)**
 
-> [!NOTE]
-> I use the word "include" to mean keys of `ShaderChunk`, because they correlate to pieces of GLSL code which are injected via `#include <xyz>` directives at runtime by `WebGLProgram`.
-> 
-> Most `includes` require other "sibling" `includes` to function properly, therefore it is recommended to use the [`features`](#features) option instead for convenience, but you can use this option for more precise control.
+I use the word "include" to mean keys of `ShaderChunk`, because they correlate to pieces of GLSL code which are injected via `#include <xyz>` directives at runtime by `WebGLProgram`.
 
-Type `IncludeName`:
+Most `includes` require other "sibling" `includes` to function properly, therefore it is recommended to use the [`features`](#features) option instead for convenience, but you can use this option for more precise control.
+
+#### Type `IncludeName`:
 (Please check Three.js ShaderChunk source code for a full list of all "includes")
 </details>
 
@@ -281,8 +273,7 @@ Type `IncludeName`:
 
 The `WebGLRenderer` class uses a subsystem called `WebGLTextures` which is responsible for managing textures.
 
-> [!NOTE]
-> While the necessity of all other subsystems can simply be derived from your selection of [materials](#materials) and [features](#features), this is not always possible for the `WebGLTextures` subsystem; therefore this option exists in case you need to explicity include the subsystem (for example, if your application uses render targets)
+While the necessity of all other subsystems can simply be derived from your selection of [materials](#materials) and [features](#features), this is not always possible for the `WebGLTextures` subsystem; therefore this option exists in case you need to explicity include the subsystem (for example, if your application uses render targets)
 </details>
 
 ### `debug`
