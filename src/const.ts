@@ -268,6 +268,7 @@ export const features = {
   ],
   dithering: ['common', 'dithering_fragment', 'dithering_pars_fragment'],
   emissivemap: [...uvs, 'emissivemap_fragment', 'emissivemap_pars_fragment'],
+  /** Environment map */
   envmap: [
     'beginnormal_vertex',
     'common',
@@ -276,7 +277,6 @@ export const features = {
     'worldpos_vertex',
   ],
   fog: ['fog_fragment', 'fog_pars_fragment', 'fog_pars_vertex', 'fog_vertex'],
-  gradientmap: [...uvs, 'gradientmap_pars_fragment'],
   iridescence: getIncludes([
     'common',
     'iridescence_fragment',

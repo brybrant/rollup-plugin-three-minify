@@ -13,8 +13,10 @@ import {
 export interface Options {
   /**
    * ### Enable debug mode?
-   * Useful in development. When enabled:
-   * - Pruned subsystems will emit console warnings to explain removal.
+   * Useful in development (should be disabled in production)
+   *
+   * When enabled, pruned subsystems will emit a warnning if used and explain
+   * how to change the plugin configuration to include the subsystem.
    */
   debug: boolean;
 
@@ -32,7 +34,7 @@ export interface Options {
 
   /**
    * ### Keep `WebXRManager` subsystem?
-   * Set to `true` if your application uses THREE's WebXR stuff.
+   * Set this option to `true` if you are building an XR application.
    * @default false
    */
   xr: boolean;
@@ -127,6 +129,18 @@ export interface UserOptions extends Partial<
   Omit<Options, 'includes' | 'materials' | 'subsystems'>
 > {
   /**
+   * ### Include `WebGLTextures` subsystem?
+   * Set to `true` if your application needs to use textures.
+   *
+   * While the necessity of all other `WebGLRenderer` subsystems can simply be
+   * derived from your selection of materials and features, this is not always
+   * possible for the `WebGLTextures` subsystem. Therefore this option exists
+   * in case you need to explicity include the subsystem (for example, if your
+   * application uses render targets)
+   */
+  textures?: boolean;
+
+  /**
    * ### THREE include(s) to keep in the bundle **(whitelist)**
    *
    * Most `includes` require other `includes` to function properly, therefore
@@ -153,7 +167,7 @@ export interface UserOptions extends Partial<
    * This plugin will keep only the essential `includes` for the material(s) in
    * this option.
    *
-   * Most material features will fail silently unless you also specify them
+   * Some material features will fail silently unless you also specify them
    * in the `features` option.
    * @default []
    */
@@ -298,7 +312,7 @@ export const parseOptions = (options: UserOptions): Options => {
     lights: false,
     morphtargets: false,
     shadowmap: false,
-    textures: false,
+    textures: !!options.textures,
   };
 
   if (userMaterials.has('background') || userMaterials.has(cubeMaterial)) {
@@ -399,6 +413,7 @@ export const parseOptions = (options: UserOptions): Options => {
   }
 
   if (
+    userIncludes.has('gradientmap_pars_fragment') ||
     userIncludes.has('transmission_fragment') ||
     userIncludes.has('transmission_pars_fragment') ||
     userIncludes.has('uv_pars_fragment') ||

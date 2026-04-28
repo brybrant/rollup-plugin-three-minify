@@ -6,14 +6,13 @@ import type { Options } from '../options';
 
 const warning = JSON.stringify(`[${name}]:
 Support for textures has been removed.
-If you wish to use textures then you must include at least one of the following features in the plugin options:
+If you wish to use textures then you must enable the "textures" option or include at least one of the following features in the plugin options:
 - "alphamap"
 - "aomap"
 - "bumpmap"
 - "displacementmap"
 - "emissivemap"
 - "envmap"
-- "gradientmap"
 - "lightmap"
 - "map"
 - "metalnessmap"
