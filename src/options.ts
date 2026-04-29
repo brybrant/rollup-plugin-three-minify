@@ -15,7 +15,7 @@ export interface Options {
    * ### Enable debug mode?
    * Useful in development (should be disabled in production)
    *
-   * When enabled, pruned subsystems will emit a warnning if used and explain
+   * When enabled, pruned subsystems will emit a warning if used and explain
    * how to change the plugin configuration to include the subsystem.
    */
   debug: boolean;
@@ -133,13 +133,9 @@ export interface UserOptions extends Partial<
 > {
   /**
    * ### Include `WebGLTextures` subsystem?
-   * Set to `true` if your application needs to use textures.
-   *
-   * While the necessity of all other `WebGLRenderer` subsystems can simply be
-   * derived from your selection of materials and features, this is not always
-   * possible for the `WebGLTextures` subsystem. Therefore this option exists
-   * in case you need to explicity include the subsystem (for example, if your
-   * application uses render targets)
+   * Set this option to `true` if your application uses textures in ways that
+   * cannot be inferred by your selection of `materials` or `features`
+   * (for example, if your application uses render targets or custom shaders).
    */
   textures?: boolean;
 

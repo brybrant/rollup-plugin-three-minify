@@ -1,6 +1,6 @@
 # rollup-plugin-three-minify
 
-This plugin reduces the bundle size of applications which import [Three.js](https://threejs.org) as an internal dependency by:
+This plugin reduces the bundle size of applications using [Three.js](https://threejs.org) by:
 - Removing redundant `WebGLRenderer` subsystems
 - Removing redundant materials from `ShaderLib`
 - Removing redundant shaders from `ShaderChunk`
@@ -133,6 +133,7 @@ const hex: string = red.getHexString(); // "ff0000"
 ```
 </details>
 
+___
 ### `jsonMethods`
 
 - **Type:** `boolean`
@@ -141,7 +142,7 @@ const hex: string = red.getHexString(); // "ff0000"
 <details>
 <summary>Description</summary>
 
-Many classes in Three.js include a `toJSON()` method which is used to safely serialize its data. Some classes also have a `fromJSON()` method which is used to reverse the serialization. These methods are analagous to [`JSON.stringify()`](http://mdn.io/stringify) and [`JSON.parse()`](http://mdn.io/parse).
+Many classes in Three.js include a `toJSON()` method which is used to safely serialize its data. Some classes also have a `fromJSON()` method which is used to reverse the serialization. These methods are analogous to [`JSON.stringify()`](http://mdn.io/stringify) and [`JSON.parse()`](http://mdn.io/parse).
 
 Set this option to `true` if your application will use these JSON methods.
 
@@ -153,6 +154,7 @@ const test: Sphere = new Sphere().fromJSON(data);
 ```
 </details>
 
+___
 ### `xr`
 
 - **Type:** `boolean`
@@ -166,6 +168,7 @@ The `WebGLRenderer` class includes a subsystem called `WebXRManager` which is re
 Set this option to `true` if you are building an XR application.
 </details>
 
+___
 ### `materials`
 
 - **Type:** `MaterialName | MaterialName[]`
@@ -201,6 +204,7 @@ This plugin will keep only the necessary `includes` for each material in this op
 - `sprite` (for `SpriteMaterial`)
 </details>
 
+___
 ### `features`
 
 - **Type:** `FeatureName | FeatureName[]`
@@ -245,6 +249,7 @@ Each "feature" refers to a group of interdependent [`includes`](#includes) and i
 Check [this handy compatibility table](https://threejs.org/manual/#en/material-table)
 </details>
 
+___
 ### `includes`
 
 - **Type:** `IncludeName | IncludeName[]`
@@ -263,6 +268,7 @@ Most `includes` require other "sibling" `includes` to function properly, therefo
 (Please check Three.js ShaderChunk source code for a full list of all "includes")
 </details>
 
+___
 ### `textures`
 
 - **Type:** `boolean`
@@ -273,9 +279,10 @@ Most `includes` require other "sibling" `includes` to function properly, therefo
 
 The `WebGLRenderer` class uses a subsystem called `WebGLTextures` which is responsible for managing textures.
 
-While the necessity of all other subsystems can simply be derived from your selection of [materials](#materials) and [features](#features), this is not always possible for the `WebGLTextures` subsystem; therefore this option exists in case you need to explicity include the subsystem (for example, if your application uses render targets)
+Set this option to `true` if your application uses textures in ways that cannot be inferred by your selection of `materials` or `features` (for example, if your application uses render targets or custom shaders).
 </details>
 
+___
 ### `debug`
 
 - **Type:** `boolean`
@@ -286,5 +293,5 @@ While the necessity of all other subsystems can simply be derived from your sele
 
 Useful in development (should be disabled in production)
 
-When enabled, pruned subsystems will emit a warnning if used and explain how to change the plugin configuration to include the subsystem.
+When enabled, pruned subsystems will emit a warning if used and explain how to change the plugin configuration to include the subsystem.
 </details>
