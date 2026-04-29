@@ -526,7 +526,7 @@ export const materials = computeStatus({
 } satisfies Record<
   string,
   Metadata & {
-    /** Array of includes which the material absolutely requries to render */
+    /** Array of includes which the material absolutely requires to render */
     readonly includes: readonly IncludeName[];
   }
 >);
