@@ -18,9 +18,8 @@ This plugin is backwards-compatible with Three.js revisions down to 135. It migh
 - JavaScript minification tools like [terser](https://terser.org/) will not minify the contents of string literals such as GLSL code. This plugin however will minify the Three.js GLSL code used by your application, and remove any unused GLSL code.
 - The `WebGLRenderer` class includes many optional subsystems which are never removed by tree-shaking. This plugin will determine the necessary subsystems based on your [options](#options) and replace any unused subsystems with no-op stubs.
 
-### ⚠️ Important
-
-By default, this plugin will remove **ALL** GLSL code and optional subsystems. You must specify exactly which [features](#features) and [materials](#materials) your application requires in the [options](#options) object, otherwise your application will likely break.
+> [!WARNING]
+> By default, this plugin will remove **ALL** GLSL code and optional subsystems. You must specify exactly which [features](#features) and [materials](#materials) your application requires in the [options](#options) object, otherwise your application will likely break.
 
 ## Install
 
