@@ -6,6 +6,8 @@ This plugin reduces the bundle size of applications using [Three.js](https://thr
 - Removing redundant shaders from `ShaderChunk`
 - Rudimentary minification of GLSL code by removing redundant whitespace
 
+## Compatibility
+
 This plugin is backwards-compatible with Three.js revisions down to 135. It might work with earlier revisions but I will not guarantee that.
 
 > [!TIP]
@@ -16,8 +18,9 @@ This plugin is backwards-compatible with Three.js revisions down to 135. It migh
 - JavaScript minification tools like [terser](https://terser.org/) will not minify the contents of string literals such as GLSL code. This plugin however will minify the Three.js GLSL code used by your application, and remove any unused GLSL code.
 - The `WebGLRenderer` class includes many optional subsystems which are never removed by tree-shaking. This plugin will determine the necessary subsystems based on your [options](#options) and replace any unused subsystems with no-op stubs.
 
-> [!NOTE]
-> By default, this plugin will remove **ALL** GLSL code and optional subsystems. You must specify exactly which features and materials your application requires in the [options](#options) object.
+## ⚠️ Important
+
+By default, this plugin will remove **ALL** GLSL code and optional subsystems. You must specify exactly which [features](#features) and [materials](#materials) your application requires in the [options](#options) object, otherwise your application will likely break.
 
 ## Install
 
@@ -95,7 +98,7 @@ renderer.render(scene, camera);
 document.body.appendChild(renderer.domElement);
 ```
 
-This basic example only uses `MeshBasicMaterial` and no other features, so your plugin configuration would look like this:
+This basic example only uses `MeshBasicMaterial` and no other features, so your plugin configuration should look like this:
 
 ```js
 // rollup.config.js
@@ -118,14 +121,13 @@ This Rollup configuration will remove all shaders and subsystems that are not re
 - **Type:** `boolean`
 - **Default:** `false`
 
-<details>
-<summary>Description</summary>
-
 Three.js contains an object called `colorKeywords` which maps CSS color names (see [named-color](https://mdn.io/named-color)) to color values, so you can create colors with CSS color names.
 
 Set this option to `true` if your application will create colors by name.
 
-#### Color Keyword Example
+<details>
+<summary>Color Keyword Example</summary>
+
 ```ts
 import { Color } from 'three';
 const red: Color = new Color('red');
@@ -139,14 +141,13 @@ ___
 - **Type:** `boolean`
 - **Default:** `false`
 
-<details>
-<summary>Description</summary>
-
 Many classes in Three.js include a `toJSON()` method which is used to safely serialize its data. Some classes also have a `fromJSON()` method which is used to reverse the serialization. These methods are analogous to [`JSON.stringify()`](http://mdn.io/stringify) and [`JSON.parse()`](http://mdn.io/parse).
 
 Set this option to `true` if your application will use these JSON methods.
 
-#### JSON Example
+<details>
+<summary>JSON Method Example</summary>
+
 ```ts
 import { Sphere } from 'three';
 const data: string = JSON.stringify(new Sphere()); // calls `Sphere.toJSON()`
@@ -160,13 +161,9 @@ ___
 - **Type:** `boolean`
 - **Default:** `false`
 
-<details>
-<summary>Description</summary>
-
 The `WebGLRenderer` class includes a subsystem called `WebXRManager` which is responsible for managing XR stuff (like virtual reality).
 
 Set this option to `true` if you are building an XR application.
-</details>
 
 ___
 ### `materials`
@@ -174,21 +171,21 @@ ___
 - **Type:** `MaterialName | MaterialName[]`
 - **Default:** `[]`
 
+Three.js material(s) to keep in the bundle **(whitelist)**
+
+> [!NOTE]
+> Every material (except `RawShaderMaterial`) requires a specific set of [`includes`](#includes) to render, otherwise the renderer will crash.
+> 
+> This plugin will keep only the necessary `includes` for each material in this option. Some optional material features will not work unless you specify them in the [`features`](#features) option.
+
 <details>
-<summary>Description</summary>
+<summary>Type `MaterialName`</summary>
 
-This option contains the material(s) to keep in the bundle **(whitelist)**
-
-Every material (except `RawShaderMaterial`) requires a specific set of [`includes`](#includes) to render, otherwise the renderer will crash.
-
-This plugin will keep only the necessary `includes` for each material in this option. Some optional material features will not work unless you specify them in the [`features`](#features) option.
-
-#### Type `MaterialName`:
 - `background` (for "flat" textures on `Scene.background`)
-- `backgroundCube` (for cube or equirectangular textures on `Scene.background`, since revision >=146)
+- `backgroundCube` (for cube or equirectangular textures on `Scene.background`, since revision &gte;146)
 - `cube` (same as `backgroundCube` for revisions <146)
 - `depth` (for `MeshDepthMaterial`)
-- `distance` (for `MeshDistanceMaterial`, since revision >=182)
+- `distance` (for `MeshDistanceMaterial`, since revision &gte;182)
 - `distanceRGBA` (same as `distance` for revisions <182)
 - `dashed` (for `LineDashedMaterial`)
 - `basic` (for `LineBasicMaterial` or `MeshBasicMaterial`)
@@ -210,19 +207,19 @@ ___
 - **Type:** `FeatureName | FeatureName[]`
 - **Default:** `[]`
 
+Three.js feature(s) to keep in the bundle **(whitelist)**
+
+> [!NOTE]
+> Each "feature" refers to a group of interdependent [`includes`](#includes) and is thus a safer way to define the requirements of your application.
+
 <details>
-<summary>Description</summary>
+<summary>Type `FeatureName`</summary>
 
-This option contains the feature(s) to keep in the bundle **(whitelist)**
-
-Each "feature" refers to a group of interdependent [`includes`](#includes) and is thus a safer way to define the requirements of your application.
-
-#### Type `FeatureName`:
-- `alphahash` (Alpha hashed transparency, since revision >=154)
+- `alphahash` (Alpha hashed transparency, since revision &gte;154)
 - `alphamap`
 - `alphatest`
 - `aomap` (Ambient Occlusion map)
-- `batching` (for `BatchedMesh`, since revision >=159)
+- `batching` (for `BatchedMesh`, since revision &gte;159)
 - `bumpmap`
 - `clipping` (Clipping planes)
 - `colors` (Vertex colors)
@@ -232,7 +229,7 @@ Each "feature" refers to a group of interdependent [`includes`](#includes) and i
 - `emissivemap`
 - `envmap` (Environment map)
 - `fog`
-- `iridescence` (for `MeshPhysicalMaterial` only, since revision >=141)
+- `iridescence` (for `MeshPhysicalMaterial` only, since revision &gte;141)
 - `lightmap`
 - `logdepthbuf` (Logarithmic depth buffer)
 - `map` (Diffuse map)
@@ -255,17 +252,18 @@ ___
 - **Type:** `IncludeName | IncludeName[]`
 - **Default:** `[]`
 
+Three.js include(s) to keep in the bundle **(whitelist)**
+
+> [!NOTE]
+> I use the word "include" to mean keys of `ShaderChunk`, because they correlate to pieces of GLSL code which are injected via `#include <xyz>` directives at runtime by `WebGLProgram`.
+> 
+> Most `includes` require other "sibling" `includes` to function properly, therefore it is recommended to use the [`features`](#features) option instead for convenience, but you can also use this option for more precise control.
+
 <details>
-<summary>Description</summary>
+<summary>Type `IncludeName`</summary>
 
-This option contains the include(s) to keep in the bundle **(whitelist)**
-
-I use the word "include" to mean keys of `ShaderChunk`, because they correlate to pieces of GLSL code which are injected via `#include <xyz>` directives at runtime by `WebGLProgram`.
-
-Most `includes` require other "sibling" `includes` to function properly, therefore it is recommended to use the [`features`](#features) option instead for convenience, but you can use this option for more precise control.
-
-#### Type `IncludeName`:
-(Please check Three.js ShaderChunk source code for a full list of all "includes")
+Please check your ShaderChunk source code for a full list of all "includes" relevant to your revision of Three.js:
+`.../node_modules/three/src/renderers/shaders/ShaderChunk`
 </details>
 
 ___
@@ -274,13 +272,9 @@ ___
 - **Type:** `boolean`
 - **Default:** `false`
 
-<details>
-<summary>Description</summary>
-
 The `WebGLRenderer` class uses a subsystem called `WebGLTextures` which is responsible for managing textures.
 
-Set this option to `true` if your application uses textures in ways that cannot be inferred by your selection of `materials` or `features` (for example, if your application uses render targets or custom shaders).
-</details>
+Set this option to `true` if your application uses textures in ways that cannot be inferred by your selection of [`materials`](#materials) or [`features`](#features) (for example, if your application uses render targets or custom shaders).
 
 ___
 ### `debug`
@@ -288,10 +282,6 @@ ___
 - **Type:** `boolean`
 - **Default:** `false`
 
-<details>
-<summary>Description</summary>
-
-Useful in development (should be disabled in production)
+Useful in development *(should be disabled in production)*
 
 When enabled, pruned subsystems will emit a warning if used and explain how to change the plugin configuration to include the subsystem.
-</details>

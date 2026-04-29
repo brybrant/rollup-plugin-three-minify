@@ -13,7 +13,7 @@ import {
 export interface Options {
   /**
    * ### Enable debug mode?
-   * Useful in development (should be disabled in production)
+   * Useful in development *(should be disabled in production)*
    *
    * When enabled, pruned subsystems will emit a warning if used and explain
    * how to change the plugin configuration to include the subsystem.
@@ -148,7 +148,7 @@ export interface UserOptions extends Partial<
    *
    * Most `includes` require other "sibling" `includes` to function properly,
    * therefore it is recommended to use the `features` option instead for
-   * convenience, but you can use this option for precise control.
+   * convenience, but you can also use this option for precise control.
    * @default []
    */
   includes?: IncludeName[] | IncludeName;
