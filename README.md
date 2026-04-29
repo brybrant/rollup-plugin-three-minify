@@ -105,7 +105,9 @@ import threeMinifyPlugin from 'rollup-plugin-three-minify';
 export default {
   input: 'index.js',
   plugins: [
-    threeMinifyPlugin({ materials: 'basic' }),
+    threeMinifyPlugin({
+      materials: 'basic',
+    }),
   ],
 };
 ```
@@ -127,9 +129,24 @@ Set this option to `true` if your application will create colors by name.
 <summary>Color Keyword Example</summary>
 
 ```ts
+// index.js
 import { Color } from 'three';
 const red: Color = new Color('red');
 const hex: string = red.getHexString(); // "ff0000"
+```
+
+```js
+// rollup.config.js
+import threeMinifyPlugin from 'rollup-plugin-three-minify';
+
+export default {
+  input: 'index.js',
+  plugins: [
+    threeMinifyPlugin({
+      colorKeywords: true,
+    }),
+  ],
+};
 ```
 </details>
 
@@ -147,9 +164,24 @@ Set this option to `true` if your application will use these JSON methods.
 <summary>JSON Method Example</summary>
 
 ```ts
+// index.js
 import { Sphere } from 'three';
 const data: string = JSON.stringify(new Sphere()); // calls `Sphere.toJSON()`
 const test: Sphere = new Sphere().fromJSON(data);
+```
+
+```js
+// rollup.config.js
+import threeMinifyPlugin from 'rollup-plugin-three-minify';
+
+export default {
+  input: 'index.js',
+  plugins: [
+    threeMinifyPlugin({
+      jsonMethods: true,
+    }),
+  ],
+};
 ```
 </details>
 
@@ -162,6 +194,31 @@ ___
 The `WebGLRenderer` class includes a subsystem called `WebXRManager` which is responsible for managing XR stuff (like virtual reality).
 
 Set this option to `true` if you are building an XR application.
+
+<details>
+<summary>WebXR Example</summary>
+
+```ts
+// index.js
+import { WebGLRenderer } from 'three';
+const renderer = new WebGLRenderer();
+renderer.xr.enabled = true;
+```
+
+```js
+// rollup.config.js
+import threeMinifyPlugin from 'rollup-plugin-three-minify';
+
+export default {
+  input: 'index.js',
+  plugins: [
+    threeMinifyPlugin({
+      xr: true,
+    }),
+  ],
+};
+```
+</details>
 
 ___
 ### `materials`
@@ -177,7 +234,7 @@ Three.js material(s) to keep in the bundle **(whitelist)**
 > This plugin will keep only the necessary `includes` for each material in this option. Some optional material features will not work unless you specify them in the [`features`](#features) option.
 
 <details>
-<summary>Type `MaterialName`</summary>
+`<summary>MaterialName</summary>`
 
 - `background` (for "flat" textures on `Scene.background`)
 - `backgroundCube` (for cube or equirectangular textures on `Scene.background`, since revision ≥146)
@@ -211,7 +268,7 @@ Three.js feature(s) to keep in the bundle **(whitelist)**
 > Each "feature" refers to a group of interdependent [`includes`](#includes) and is thus a safer way to define the requirements of your application.
 
 <details>
-<summary>Type `FeatureName`</summary>
+`<summary>FeatureName</summary>`
 
 - `alphahash` (Alpha hashed transparency, since revision ≥154)
 - `alphamap`
@@ -258,7 +315,7 @@ Three.js include(s) to keep in the bundle **(whitelist)**
 > Most `includes` require other "sibling" `includes` to function properly, therefore it is recommended to use the [`features`](#features) option instead for convenience, but you can also use this option for more precise control.
 
 <details>
-<summary>Type `IncludeName`</summary>
+`<summary>IncludeName</summary>`
 
 Please check your ShaderChunk source code for a full list of all "includes" relevant to your revision of Three.js:
 ```
@@ -285,3 +342,31 @@ ___
 Useful in development *(should be disabled in production)*
 
 When enabled, pruned subsystems will emit a warning if used and explain how to change the plugin configuration to include the subsystem.
+
+<details>
+<summary>Debug Example</summary>
+
+```js
+// index.js
+import { WebGLRenderer } from 'three';
+const renderer = new WebGLRenderer();
+
+// Clipping planes will not work because the "clipping" feature is omitted.
+// Debug mode is enabled, so the `WebGLClipping` stub will emit a warning.
+renderer.localClippingEnabled = true;
+```
+
+```js
+// rollup.config.js
+import threeMinifyPlugin from 'rollup-plugin-three-minify';
+
+export default {
+  input: 'index.js',
+  plugins: [
+    threeMinifyPlugin({
+      debug: true,
+    }),
+  ],
+};
+```
+</details>
