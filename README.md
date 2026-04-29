@@ -9,9 +9,6 @@ This plugin reduces the bundle size of applications using [Three.js](https://thr
 > [!NOTE]
 > This plugin is backwards-compatible with Three.js revisions down to 135. It might work with earlier revisions but I will not guarantee that.
 
-> [!TIP]
-> This Rollup plugin is also compatible with [Rolldown](https://rolldown.rs/) and [Vite](https://vite.dev/).
-
 ## Rationale
 
 - JavaScript minification tools like [terser](https://terser.org/) will not minify the contents of string literals such as GLSL code. This plugin however will minify the Three.js GLSL code used by your application, and remove any unused GLSL code.
