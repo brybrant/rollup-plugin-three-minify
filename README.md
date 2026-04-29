@@ -182,10 +182,10 @@ Three.js material(s) to keep in the bundle **(whitelist)**
 <summary>Type `MaterialName`</summary>
 
 - `background` (for "flat" textures on `Scene.background`)
-- `backgroundCube` (for cube or equirectangular textures on `Scene.background`, since revision &gte;146)
+- `backgroundCube` (for cube or equirectangular textures on `Scene.background`, since revision ≥146)
 - `cube` (same as `backgroundCube` for revisions <146)
 - `depth` (for `MeshDepthMaterial`)
-- `distance` (for `MeshDistanceMaterial`, since revision &gte;182)
+- `distance` (for `MeshDistanceMaterial`, since revision ≥182)
 - `distanceRGBA` (same as `distance` for revisions <182)
 - `dashed` (for `LineDashedMaterial`)
 - `basic` (for `LineBasicMaterial` or `MeshBasicMaterial`)
@@ -215,11 +215,11 @@ Three.js feature(s) to keep in the bundle **(whitelist)**
 <details>
 <summary>Type `FeatureName`</summary>
 
-- `alphahash` (Alpha hashed transparency, since revision &gte;154)
+- `alphahash` (Alpha hashed transparency, since revision ≥154)
 - `alphamap`
 - `alphatest`
 - `aomap` (Ambient Occlusion map)
-- `batching` (for `BatchedMesh`, since revision &gte;159)
+- `batching` (for `BatchedMesh`, since revision ≥159)
 - `bumpmap`
 - `clipping` (Clipping planes)
 - `colors` (Vertex colors)
@@ -229,7 +229,7 @@ Three.js feature(s) to keep in the bundle **(whitelist)**
 - `emissivemap`
 - `envmap` (Environment map)
 - `fog`
-- `iridescence` (for `MeshPhysicalMaterial` only, since revision &gte;141)
+- `iridescence` (for `MeshPhysicalMaterial` only, since revision ≥141)
 - `lightmap`
 - `logdepthbuf` (Logarithmic depth buffer)
 - `map` (Diffuse map)
