@@ -6,14 +6,13 @@ This plugin reduces the bundle size of applications using [Three.js](https://thr
 - Removing redundant shaders from `ShaderChunk`
 - Rudimentary minification of GLSL code by removing redundant whitespace
 
-## Compatibility
-
-This plugin is backwards-compatible with Three.js revisions down to 135. It might work with earlier revisions but I will not guarantee that.
+> [!NOTE]
+> This plugin is backwards-compatible with Three.js revisions down to 135. It might work with earlier revisions but I will not guarantee that.
 
 > [!TIP]
 > This Rollup plugin is also compatible with [Rolldown](https://rolldown.rs/) and [Vite](https://vite.dev/).
 
-## Why?
+## Rationale
 
 - JavaScript minification tools like [terser](https://terser.org/) will not minify the contents of string literals such as GLSL code. This plugin however will minify the Three.js GLSL code used by your application, and remove any unused GLSL code.
 - The `WebGLRenderer` class includes many optional subsystems which are never removed by tree-shaking. This plugin will determine the necessary subsystems based on your [options](#options) and replace any unused subsystems with no-op stubs.
@@ -69,7 +68,7 @@ export default defineConfig({
 ```
 </details>
 
-### Example
+### Usage Example
 
 Import `three` and build your application as you normally would:
 
