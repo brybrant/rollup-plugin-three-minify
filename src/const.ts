@@ -11,7 +11,7 @@ import { REVISION } from 'three';
 export const revision = Number(REVISION);
 
 /**
- * `String.replace()` replacer function
+ * `String.replace()` callback function
  * @param match The matched string (`$&`)
  * @param groups Capture groups
  * @returns Transformed string
@@ -67,8 +67,8 @@ function computeStatus<T extends Record<string, Metadata & object>>(record: T) {
 /**
  * Basically `THREE.ShaderChunk` with some metadata (minus material shaders)
  *
- * These shaders are meant to be imported into material shaders via
- * `#include <shader>` GLSL directives.
+ * These "chunks" are injected into material shaders via `#include <shader>`
+ * GLSL directives.
  *
  * Check {@link materials} for material shaders.
  */
