@@ -263,7 +263,9 @@ Three.js include(s) to keep in the bundle **(whitelist)**
 <summary>Type `IncludeName`</summary>
 
 Please check your ShaderChunk source code for a full list of all "includes" relevant to your revision of Three.js:
-`.../node_modules/three/src/renderers/shaders/ShaderChunk`
+```
+.../node_modules/three/src/renderers/shaders/ShaderChunk
+```
 </details>
 
 ___
