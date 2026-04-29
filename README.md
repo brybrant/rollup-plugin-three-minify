@@ -231,7 +231,7 @@ Three.js material(s) to keep in the bundle **(whitelist)**
 > This plugin will keep only the necessary `includes` for each material in this option. Some optional material features will not work unless you specify them in the [`features`](#features) option.
 
 <details>
-`<summary>MaterialName</summary>`
+<summary>MaterialName</summary>
 
 - `background` (for "flat" textures on `Scene.background`)
 - `backgroundCube` (for cube or equirectangular textures on `Scene.background`, since revision ≥146)
@@ -265,7 +265,7 @@ Three.js feature(s) to keep in the bundle **(whitelist)**
 > Each "feature" refers to a group of interdependent [`includes`](#includes) and is thus a safer way to define the requirements of your application.
 
 <details>
-`<summary>FeatureName</summary>`
+<summary>FeatureName</summary>
 
 - `alphahash` (Alpha hashed transparency, since revision ≥154)
 - `alphamap`
@@ -312,7 +312,7 @@ Three.js include(s) to keep in the bundle **(whitelist)**
 > Most `includes` require other "sibling" `includes` to function properly, therefore it is recommended to use the [`features`](#features) option instead for convenience, but you can also use this option for more precise control.
 
 <details>
-`<summary>IncludeName</summary>`
+<summary>IncludeName</summary>
 
 Please check your ShaderChunk source code for a full list of all "includes" relevant to your revision of Three.js:
 ```
