@@ -173,8 +173,8 @@ export interface UserOptions extends Partial<
    * set of `includes` to render, otherwise the renderer will crash.
    *
    * This plugin will keep only the necessary `includes` for each material in
-   * this option. Some material features will fail unless you specify them in
-   * the `features` option.
+   * this option. Some optional material features will not work unless you
+   * specify them in the `features` option.
    * @default []
    */
   materials?: MaterialName[] | MaterialName;

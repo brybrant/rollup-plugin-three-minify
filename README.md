@@ -14,7 +14,7 @@ This plugin is backwards-compatible with Three.js revisions down to 135. It migh
 ## Why?
 
 - JavaScript minification tools like [terser](https://terser.org/) will not minify the contents of string literals such as GLSL code. This plugin however will minify the Three.js GLSL code used by your application, and remove any unused GLSL code.
-- The `WebGLRenderer` class includes many subsystems which are not always required, but never removed by tree-shaking. This plugin will determine the necessary subsystems based on your [options](#options) and replace any unused subsystems with no-op stubs.
+- The `WebGLRenderer` class includes many optional subsystems which are never removed by tree-shaking. This plugin will determine the necessary subsystems based on your [options](#options) and replace any unused subsystems with no-op stubs.
 
 > [!NOTE]
 > By default, this plugin will remove **ALL** GLSL code and optional subsystems. You must specify exactly which features and materials your application requires in the [options](#options) object.
@@ -178,7 +178,7 @@ This option contains the material(s) to keep in the bundle **(whitelist)**
 
 Every material (except `RawShaderMaterial`) requires a specific set of [`includes`](#includes) to render, otherwise the renderer will crash.
 
-This plugin will keep only the necessary `includes` for each material in this option. Some material features will fail unless you specify them in the [`features`](#features) option.
+This plugin will keep only the necessary `includes` for each material in this option. Some optional material features will not work unless you specify them in the [`features`](#features) option.
 
 #### Type `MaterialName`:
 - `background` (for "flat" textures on `Scene.background`)
