@@ -231,26 +231,28 @@ Three.js material(s) to keep in the bundle **(whitelist)**
 > This plugin will keep only the necessary `includes` for each material in this option. Some optional material features will not work unless you specify them in the [`features`](#features) option.
 
 <details>
-<summary>MaterialName</summary>
+<summary>MaterialName Type</summary>
 
-- `background` (for "flat" textures on `Scene.background`)
-- `backgroundCube` (for cube or equirectangular textures on `Scene.background`, since revision ≥146)
-- `cube` (same as `backgroundCube` for revisions <146)
-- `depth` (for `MeshDepthMaterial`)
-- `distance` (for `MeshDistanceMaterial`, since revision ≥182)
-- `distanceRGBA` (same as `distance` for revisions <182)
-- `dashed` (for `LineDashedMaterial`)
-- `basic` (for `LineBasicMaterial` or `MeshBasicMaterial`)
-- `lambert` (for `MeshLambertMaterial`)
-- `matcap` (for `MeshMatcapMaterial`)
-- `normal` (for `MeshNormalMaterial`)
-- `phong` (for `MeshPhongMaterial`)
-- `standard` (for `MeshStandardMaterial`)
-- `physical` (for `MeshPhysicalMaterial`)
-- `toon` (for `MeshToonMaterial`)
-- `points` (for `PointsMaterial`)
-- `shadow` (for `ShadowMaterial`)
-- `sprite` (for `SpriteMaterial`)
+|`MaterialName`|Usage|
+|--|--|
+|`background`|"Flat" textures on `Scene.background`|
+|`backgroundCube`|Cube or Equirectangular textures on `Scene.background` (since revision ≥146)|
+|`cube`|Same as `backgroundCube` (for revisions <146)|
+|`depth`|`MeshDepthMaterial`|
+|`distance`|`MeshDistanceMaterial` (since revision ≥182)|
+|`distanceRGBA`|Same as `distance` (for revisions <182)|
+|`dashed`|`LineDashedMaterial`|
+|`basic`|`LineBasicMaterial` or `MeshBasicMaterial`|
+|`lambert`|`MeshLambertMaterial`|
+|`matcap`|`MeshMatcapMaterial`|
+|`normal`|`MeshNormalMaterial`|
+|`phong`|`MeshPhongMaterial`|
+|`standard`|`MeshStandardMaterial`|
+|`physical`|`MeshPhysicalMaterial`|
+|`toon`|`MeshToonMaterial`|
+|`points`|`PointsMaterial`|
+|`shadow`|`ShadowMaterial`|
+|`sprite`|`SpriteMaterial`|
 </details>
 
 ___
@@ -265,35 +267,37 @@ Three.js feature(s) to keep in the bundle **(whitelist)**
 > Each "feature" refers to a group of interdependent [`includes`](#includes) and is thus a safer way to define the requirements of your application.
 
 <details>
-<summary>FeatureName</summary>
+<summary>FeatureName Type</summary>
 
-- `alphahash` (Alpha hashed transparency, since revision ≥154)
-- `alphamap`
-- `alphatest`
-- `aomap` (Ambient Occlusion map)
-- `batching` (for `BatchedMesh`, since revision ≥159)
-- `bumpmap`
-- `clipping` (Clipping planes)
-- `colors` (Vertex colors)
-- `colorspace` (Automatically included by all materials except `RawShaderMaterial`)
-- `displacementmap`
-- `dithering`
-- `emissivemap`
-- `envmap` (Environment map)
-- `fog`
-- `iridescence` (for `MeshPhysicalMaterial` only, since revision ≥141)
-- `lightmap`
-- `logdepthbuf` (Logarithmic depth buffer)
-- `map` (Diffuse map)
-- `metalnessmap`
-- `morphtargets`
-- `normalmap`
-- `roughnessmap`
-- `shadows` (If `WebGLRenderer.shadowMap.enabled` is set to `true`)
-- `skinning`
-- `specularmap`
-- `tonemapping`
-- `transmission` (for `MeshPhysicalMaterial` only)
+|`FeatureName`|Usage|
+|--|--|
+|`alphahash`|Alpha hashed transparency (since revision ≥154)|
+|`alphamap`|Alpha map|
+|`alphatest`|If you will use a material with `alphaTest` > 0|
+|`aomap`|Ambient occlusion map|
+|`batching`|`BatchedMesh` (since revision ≥159)|
+|`bumpmap`|Bump map|
+|`clipping`|Clipping planes|
+|`colors`|Vertex colors|
+|`colorspace`|Automatically included by all materials (except `RawShaderMaterial`)|
+|`displacementmap`|Displacement map|
+|`dithering`|Dithering|
+|`emissivemap`|Emissive map|
+|`envmap`|Environment map|
+|`fog`|Fog|
+|`iridescence`|Iridescence on `MeshPhysicalMaterial` (since revision ≥141)|
+|`lightmap`|Light map|
+|`logdepthbuf`|Logarithmic depth buffer|
+|`map`|Diffuse map|
+|`metalnessmap`|Metalness map|
+|`morphtargets`|Morph targets|
+|`normalmap`|Normal map|
+|`roughnessmap`|Roughness map|
+|`shadows`|Shadows (if `WebGLRenderer.shadowMap.enabled` is `true`)|
+|`skinning`|Skinning|
+|`specularmap`|Specular map|
+|`tonemapping`|Tonemapping|
+|`transmission`|Transmission on `MeshPhysicalMaterial`|
 
 Check [this handy compatibility table](https://threejs.org/manual/#en/material-table)
 </details>
