@@ -129,6 +129,7 @@ export const includes = computeStatus({
   /** Merged with `lights_fragment_maps` */
   lightmap_fragment: { deprecated: 164 },
   lightmap_pars_fragment: {},
+  lightprobes_pars_fragment: { since: 184 },
   lights_fragment_begin: {},
   lights_fragment_end: {},
   lights_fragment_maps: {},

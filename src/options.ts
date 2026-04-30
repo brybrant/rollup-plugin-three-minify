@@ -365,11 +365,12 @@ export const parseOptions = (options: UserOptions): Options => {
     addMaterials(['physical', 'standard']);
   }
 
-  /** Many materials require light */
   if (
+    userIncludes.has('lightprobes_pars_fragment') ||
     /** Perhaps user wants Three.js lights on `RawShaderMaterial`? */
     userIncludes.has('lights_pars_begin') ||
     subsystems.shadowmap ||
+    /** Many materials require light */
     userMaterials.has('lambert') ||
     userMaterials.has('phong') ||
     userMaterials.has('shadow') ||
