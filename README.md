@@ -15,7 +15,7 @@ This plugin reduces the bundle size of applications using [Three.js](https://thr
 - The `WebGLRenderer` class includes many optional subsystems which are never removed by tree-shaking. This plugin will determine the necessary subsystems based on your [options](#options) and replace any unused subsystems with no-op stubs.
 
 > [!WARNING]
-> By default, this plugin will remove **ALL** GLSL code and optional subsystems. You must specify exactly which [features](#features) and [materials](#materials) your application requires, and everything else will be removed.
+> By default, this plugin behaves as a **whitelist** and will remove **ALL** GLSL code and optional subsystems. You must specify exactly which [features](#features) and [materials](#materials) your application requires, and everything else will be removed.
 
 ## Install
 
@@ -112,9 +112,6 @@ export default {
 This Rollup configuration will remove all shaders and subsystems that are not required by `MeshBasicMaterial`. If you need to use other features like textures or shadows then you must specify that in the [options](#options) object!
 
 ## Options
-
-> [!IMPORTANT]
-> Think of these plugin options as a **whitelist**; you explicitly declare what your application requires, and everything else is removed.
 
 ### `colorKeywords`
 
