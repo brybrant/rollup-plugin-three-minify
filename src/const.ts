@@ -217,33 +217,35 @@ const uvs2 = ['uv2_pars_fragment', 'uv2_pars_vertex', 'uv2_vertex'] as const;
  * absolutely requires to render.
  */
 export const features = {
-  /** Alpha hashed transparency */
+  /** `Material.alphaHash` (Alpha hashed transparency) */
   alphahash: getIncludes([
     'alphahash_fragment',
     'alphahash_pars_fragment',
     'common',
   ]),
-  /** Alpha map */
+  /** `Material.alphaMap` */
   alphamap: [...uvs, 'alphamap_fragment', 'alphamap_pars_fragment'],
-  /** Alpha test (If your app will use a material with `alphaTest` > 0) */
+  /** `Material.alphaTest` */
   alphatest: ['alphatest_fragment', 'alphatest_pars_fragment'],
-  /** Ambient occlusion map */
+  /** `Material.aoMap` (Ambient occlusion map) */
   aomap: [
     ...(revision < 151 ? uvs2 : uvs),
     'aomap_fragment',
     'aomap_pars_fragment',
     'common',
   ],
+  /** `BatchedMesh` */
   batching: getIncludes(['batching_pars_vertex', 'batching_vertex']),
+  /** `Material.bumpMap` */
   bumpmap: [...uvs, 'bumpmap_pars_fragment', 'normal_fragment_maps'],
-  /** Clipping planes */
+  /** `Material.clippingPlanes` (or `WebGLRenderer.clippingPlanes`) */
   clipping: [
     'clipping_planes_fragment',
     'clipping_planes_pars_fragment',
     'clipping_planes_pars_vertex',
     'clipping_planes_vertex',
   ],
-  /** Vertex colors */
+  /** `Material.vertexColors` */
   colors: [
     'color_fragment',
     'color_pars_fragment',
@@ -260,15 +262,18 @@ export const features = {
     'encodings_fragment',
     'encodings_pars_fragment',
   ]),
+  /** `Material.displacementMap` */
   displacementmap: [
     ...uvs,
     'beginnormal_vertex',
     'displacementmap_pars_vertex',
     'displacementmap_vertex',
   ],
+  /** `Material.dithering` */
   dithering: ['common', 'dithering_fragment', 'dithering_pars_fragment'],
+  /** `Material.emissiveMap` */
   emissivemap: [...uvs, 'emissivemap_fragment', 'emissivemap_pars_fragment'],
-  /** Environment map */
+  /** `Material.envMap` (or `Scene.environment`) */
   envmap: [
     'beginnormal_vertex',
     'common',
@@ -276,19 +281,22 @@ export const features = {
     'envmap_common_pars_fragment',
     'worldpos_vertex',
   ],
+  /** `Scene.fog` */
   fog: ['fog_fragment', 'fog_pars_fragment', 'fog_pars_vertex', 'fog_vertex'],
+  /** `Material.iridescence` */
   iridescence: getIncludes([
     'common',
     'iridescence_fragment',
     'iridescence_pars_fragment',
   ]),
+  /** `Material.lightMap` */
   lightmap: getIncludes([
     ...(revision < 151 ? uvs2 : uvs),
     'lightmap_fragment',
     'lightmap_pars_fragment',
     'lights_fragment_maps',
   ]),
-  /** Logarithmic depth buffer */
+  /** `Renderer.logarithmicDepthBuffer` */
   logdepthbuf: [
     'common',
     'logdepthbuf_fragment',
@@ -296,9 +304,11 @@ export const features = {
     'logdepthbuf_pars_fragment',
     'logdepthbuf_vertex',
   ],
-  /** Diffuse map */
+  /** `Material.map` (Diffuse map) */
   map: [...uvs, 'map_fragment', 'map_pars_fragment'],
+  /** `Material.metalnessMap` */
   metalnessmap: [...uvs, 'metalnessmap_fragment', 'metalnessmap_pars_fragment'],
+  /** `BufferGeometry.morphAttributes` (Morph targets) */
   morphtargets: getIncludes([
     'morphcolor_vertex',
     'morphinstance_vertex',
@@ -306,8 +316,11 @@ export const features = {
     'morphtarget_pars_vertex',
     'morphtarget_vertex',
   ]),
+  /** `Material.normalMap` */
   normalmap: [...uvs, 'normal_fragment_maps', 'normalmap_pars_fragment'],
+  /** `Material.roughnessMap` */
   roughnessmap: [...uvs, 'roughnessmap_fragment', 'roughnessmap_pars_fragment'],
+  /** `Renderer.shadowMap.enabled` */
   shadows: [
     'beginnormal_vertex',
     'common',
@@ -317,6 +330,7 @@ export const features = {
     'shadowmap_vertex',
     'worldpos_vertex',
   ],
+  /** `SkinnedMesh` */
   skinning: [
     'beginnormal_vertex',
     'skinning_pars_vertex',
@@ -324,8 +338,11 @@ export const features = {
     'skinning_vertex',
     'skinnormal_vertex',
   ],
+  /** `Material.specularMap` */
   specularmap: [...uvs, 'specularmap_fragment', 'specularmap_pars_fragment'],
+  /** `Renderer.toneMapping` */
   tonemapping: ['tonemapping_fragment', 'tonemapping_pars_fragment'],
+  /** `Material.transmission` */
   transmission: [
     'common',
     'transmission_fragment',
