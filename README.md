@@ -269,6 +269,8 @@ Three.js feature(s) to keep in the bundle **(whitelist)**
 <details>
 <summary>FeatureName Type</summary>
 
+Check [this handy Material Feature compatibility table](https://threejs.org/manual/#en/material-table)
+
 |`FeatureName`|Usage|
 |--|--|
 |`alphahash`|[`Material.alphaHash`](https://threejs.org/docs/#Material.alphaHash) (since revision ≥154)|
@@ -298,8 +300,6 @@ Three.js feature(s) to keep in the bundle **(whitelist)**
 |`specularmap`|`Material.specularMap`|
 |`tonemapping`|[`Renderer.toneMapping`](https://threejs.org/docs/#Renderer.toneMapping)|
 |`transmission`|[`Material.transmission`](https://threejs.org/docs/#MeshPhysicalMaterial.transmission)|
-
-Check [this handy compatibility table](https://threejs.org/manual/#en/material-table)
 </details>
 
 ___
