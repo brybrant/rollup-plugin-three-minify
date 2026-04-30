@@ -271,33 +271,33 @@ Three.js feature(s) to keep in the bundle **(whitelist)**
 
 |`FeatureName`|Usage|
 |--|--|
-|`alphahash`|Alpha hashed transparency (since revision ≥154)|
-|`alphamap`|Alpha map|
-|`alphatest`|If you will use a material with `alphaTest` > 0|
-|`aomap`|Ambient occlusion map|
-|`batching`|`BatchedMesh` (since revision ≥159)|
-|`bumpmap`|Bump map|
-|`clipping`|Clipping planes|
-|`colors`|Vertex colors|
+|`alphahash`|[`Material` property](https://threejs.org/docs/#Material.alphaHash) `alphaHash === true` (since revision ≥154)|
+|`alphamap`|`Material` property `alphaMap !== null`|
+|`alphatest`|[`Material` property](https://threejs.org/docs/#Material.alphaTest) `alphaTest > 0`|
+|`aomap`|`Material` property `aoMap !== null`|
+|`batching`|[`BatchedMesh`](https://threejs.org/docs/#BatchedMesh) (since revision ≥159)|
+|`bumpmap`|`Material` property `bumpMap !== null`|
+|`clipping`|[`Material` property](https://threejs.org/docs/#Material.clippingPlanes) `clippingPlanes !== null` (or [`WebGLRenderer.clippingPlanes` property](https://threejs.org/docs/#WebGLRenderer.clippingPlanes))|
+|`colors`|[`Material` property](https://threejs.org/docs/#Material.vertexColors) `vertexColors === true`|
 |`colorspace`|Automatically included by all materials (except `RawShaderMaterial`)|
-|`displacementmap`|Displacement map|
-|`dithering`|Dithering|
-|`emissivemap`|Emissive map|
-|`envmap`|Environment map|
-|`fog`|Fog|
-|`iridescence`|Iridescence on `MeshPhysicalMaterial` (since revision ≥141)|
-|`lightmap`|Light map|
-|`logdepthbuf`|Logarithmic depth buffer|
-|`map`|Diffuse map|
-|`metalnessmap`|Metalness map|
-|`morphtargets`|Morph targets|
-|`normalmap`|Normal map|
-|`roughnessmap`|Roughness map|
-|`shadows`|Shadows (if `WebGLRenderer.shadowMap.enabled` is `true`)|
-|`skinning`|Skinning|
-|`specularmap`|Specular map|
-|`tonemapping`|Tonemapping|
-|`transmission`|Transmission on `MeshPhysicalMaterial`|
+|`displacementmap`|`Material` property `displacementMap !== null`|
+|`dithering`|[`Material` property](https://threejs.org/docs/#Material.dithering) `dithering === true`|
+|`emissivemap`|`Material` property `emissiveMap !== null`|
+|`envmap`|`Material` property `envMap !== null` (or [`Scene.environment` property](https://threejs.org/docs/#Scene.environment))|
+|`fog`|[`Scene` property](https://threejs.org/docs/#Scene.fog) `fog !== null`|
+|`iridescence`|[`Material` property](https://threejs.org/docs/#MeshPhysicalMaterial.iridescence) `iridescence > 0` (since revision ≥141)|
+|`lightmap`|`Material` property `lightMap !== null`|
+|`logdepthbuf`|[`Renderer` property](https://threejs.org/docs/#Renderer.logarithmicDepthBuffer) `logarithmicDepthBuffer === true`|
+|`map`|`Material` property `map !== null`|
+|`metalnessmap`|[`Material` property](https://threejs.org/docs/#MeshStandardMaterial.metalnessMap) `metalnessMap !== null`|
+|`morphtargets`|[`BufferGeometry.morphAttributes`](https://threejs.org/docs/#BufferGeometry.morphAttributes)|
+|`normalmap`|`Material` property `normalMap !== null`|
+|`roughnessmap`|[`Material` property](https://threejs.org/docs/#MeshStandardMaterial.roughnessMap) `roughnessMap !== null`|
+|`shadows`|[`Renderer.shadowMap` property](https://threejs.org/docs/#Renderer.shadowMap) `enabled === true`|
+|`skinning`|`SkinnedMesh`|
+|`specularmap`|`Material` property `specularMap !== null`|
+|`tonemapping`|[`Renderer` property](https://threejs.org/docs/#Renderer.toneMapping) `toneMapping !== NoToneMapping`|
+|`transmission`|[`Material` property](https://threejs.org/docs/#MeshPhysicalMaterial.transmission) `transmission > 0`|
 
 Check [this handy compatibility table](https://threejs.org/manual/#en/material-table)
 </details>
