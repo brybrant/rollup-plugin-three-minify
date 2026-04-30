@@ -271,33 +271,33 @@ Three.js feature(s) to keep in the bundle **(whitelist)**
 
 |`FeatureName`|Usage|
 |--|--|
-|`alphahash`|[`Material` property](https://threejs.org/docs/#Material.alphaHash) `alphaHash === true` (since revision ≥154)|
-|`alphamap`|`Material` property `alphaMap !== null`|
-|`alphatest`|[`Material` property](https://threejs.org/docs/#Material.alphaTest) `alphaTest > 0`|
-|`aomap`|`Material` property `aoMap !== null`|
+|`alphahash`|[`Material.alphaHash` property](https://threejs.org/docs/#Material.alphaHash) (since revision ≥154)|
+|`alphamap`|`Material.alphaMap` property|
+|`alphatest`|[`Material.alphaTest` property](https://threejs.org/docs/#Material.alphaTest)|
+|`aomap`|`Material.aoMap` property|
 |`batching`|[`BatchedMesh`](https://threejs.org/docs/#BatchedMesh) (since revision ≥159)|
-|`bumpmap`|`Material` property `bumpMap !== null`|
-|`clipping`|[`Material` property](https://threejs.org/docs/#Material.clippingPlanes) `clippingPlanes !== null` (or [`WebGLRenderer.clippingPlanes` property](https://threejs.org/docs/#WebGLRenderer.clippingPlanes))|
-|`colors`|[`Material` property](https://threejs.org/docs/#Material.vertexColors) `vertexColors === true`|
+|`bumpmap`|`Material.bumpMap` property|
+|`clipping`|[`Material.clippingPlanes` property](https://threejs.org/docs/#Material.clippingPlanes) (or [`WebGLRenderer.clippingPlanes` property](https://threejs.org/docs/#WebGLRenderer.clippingPlanes))|
+|`colors`|[`Material.vertexColors` property](https://threejs.org/docs/#Material.vertexColors)|
 |`colorspace`|Automatically included by all materials (except `RawShaderMaterial`)|
-|`displacementmap`|`Material` property `displacementMap !== null`|
-|`dithering`|[`Material` property](https://threejs.org/docs/#Material.dithering) `dithering === true`|
-|`emissivemap`|`Material` property `emissiveMap !== null`|
-|`envmap`|`Material` property `envMap !== null` (or [`Scene.environment` property](https://threejs.org/docs/#Scene.environment))|
-|`fog`|[`Scene` property](https://threejs.org/docs/#Scene.fog) `fog !== null`|
-|`iridescence`|[`Material` property](https://threejs.org/docs/#MeshPhysicalMaterial.iridescence) `iridescence > 0` (since revision ≥141)|
-|`lightmap`|`Material` property `lightMap !== null`|
-|`logdepthbuf`|[`Renderer` property](https://threejs.org/docs/#Renderer.logarithmicDepthBuffer) `logarithmicDepthBuffer === true`|
-|`map`|`Material` property `map !== null`|
-|`metalnessmap`|[`Material` property](https://threejs.org/docs/#MeshStandardMaterial.metalnessMap) `metalnessMap !== null`|
-|`morphtargets`|[`BufferGeometry.morphAttributes`](https://threejs.org/docs/#BufferGeometry.morphAttributes)|
-|`normalmap`|`Material` property `normalMap !== null`|
-|`roughnessmap`|[`Material` property](https://threejs.org/docs/#MeshStandardMaterial.roughnessMap) `roughnessMap !== null`|
-|`shadows`|[`Renderer.shadowMap` property](https://threejs.org/docs/#Renderer.shadowMap) `enabled === true`|
+|`displacementmap`|`Material.displacementMap` property|
+|`dithering`|[`Material.dithering` property](https://threejs.org/docs/#Material.dithering)|
+|`emissivemap`|`Material.emissiveMap` property|
+|`envmap`|`Material.envMap` property (or [`Scene.environment` property](https://threejs.org/docs/#Scene.environment))|
+|`fog`|[`Scene.fog` property](https://threejs.org/docs/#Scene.fog)|
+|`iridescence`|[`Material.iridescence` property](https://threejs.org/docs/#MeshPhysicalMaterial.iridescence) (since revision ≥141)|
+|`lightmap`|`Material.lightMap` property|
+|`logdepthbuf`|[`Renderer.logarithmicDepthBuffer` property](https://threejs.org/docs/#Renderer.logarithmicDepthBuffer)|
+|`map`|`Material.map` property|
+|`metalnessmap`|[`Material.metalnessMap` property](https://threejs.org/docs/#MeshStandardMaterial.metalnessMap)|
+|`morphtargets`|[`BufferGeometry.morphAttributes` property](https://threejs.org/docs/#BufferGeometry.morphAttributes)|
+|`normalmap`|`Material.normalMap` property|
+|`roughnessmap`|[`Material.roughnessMap` property](https://threejs.org/docs/#MeshStandardMaterial.roughnessMap)|
+|`shadows`|[`Renderer.shadowMap.enabled` property](https://threejs.org/docs/#Renderer.shadowMap)|
 |`skinning`|`SkinnedMesh`|
-|`specularmap`|`Material` property `specularMap !== null`|
-|`tonemapping`|[`Renderer` property](https://threejs.org/docs/#Renderer.toneMapping) `toneMapping !== NoToneMapping`|
-|`transmission`|[`Material` property](https://threejs.org/docs/#MeshPhysicalMaterial.transmission) `transmission > 0`|
+|`specularmap`|`Material.specularMap`|
+|`tonemapping`|[`Renderer.toneMapping` property](https://threejs.org/docs/#Renderer.toneMapping)|
+|`transmission`|[`Material.transmission` property](https://threejs.org/docs/#MeshPhysicalMaterial.transmission)|
 
 Check [this handy compatibility table](https://threejs.org/manual/#en/material-table)
 </details>
