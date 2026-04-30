@@ -271,33 +271,33 @@ Three.js feature(s) to keep in the bundle **(whitelist)**
 
 |`FeatureName`|Usage|
 |--|--|
-|`alphahash`|[`Material.alphaHash` property](https://threejs.org/docs/#Material.alphaHash) (since revision ≥154)|
-|`alphamap`|`Material.alphaMap` property|
-|`alphatest`|[`Material.alphaTest` property](https://threejs.org/docs/#Material.alphaTest)|
-|`aomap`|`Material.aoMap` property|
+|`alphahash`|[`Material.alphaHash`](https://threejs.org/docs/#Material.alphaHash) (since revision ≥154)|
+|`alphamap`|`Material.alphaMap`|
+|`alphatest`|[`Material.alphaTest`](https://threejs.org/docs/#Material.alphaTest)|
+|`aomap`|`Material.aoMap`|
 |`batching`|[`BatchedMesh`](https://threejs.org/docs/#BatchedMesh) (since revision ≥159)|
-|`bumpmap`|`Material.bumpMap` property|
-|`clipping`|[`Material.clippingPlanes` property](https://threejs.org/docs/#Material.clippingPlanes) (or [`WebGLRenderer.clippingPlanes` property](https://threejs.org/docs/#WebGLRenderer.clippingPlanes))|
-|`colors`|[`Material.vertexColors` property](https://threejs.org/docs/#Material.vertexColors)|
-|`colorspace`|Automatically included by all materials (except `RawShaderMaterial`)|
-|`displacementmap`|`Material.displacementMap` property|
-|`dithering`|[`Material.dithering` property](https://threejs.org/docs/#Material.dithering)|
-|`emissivemap`|`Material.emissiveMap` property|
-|`envmap`|`Material.envMap` property (or [`Scene.environment` property](https://threejs.org/docs/#Scene.environment))|
-|`fog`|[`Scene.fog` property](https://threejs.org/docs/#Scene.fog)|
-|`iridescence`|[`Material.iridescence` property](https://threejs.org/docs/#MeshPhysicalMaterial.iridescence) (since revision ≥141)|
-|`lightmap`|`Material.lightMap` property|
-|`logdepthbuf`|[`Renderer.logarithmicDepthBuffer` property](https://threejs.org/docs/#Renderer.logarithmicDepthBuffer)|
-|`map`|`Material.map` property|
-|`metalnessmap`|[`Material.metalnessMap` property](https://threejs.org/docs/#MeshStandardMaterial.metalnessMap)|
-|`morphtargets`|[`BufferGeometry.morphAttributes` property](https://threejs.org/docs/#BufferGeometry.morphAttributes)|
-|`normalmap`|`Material.normalMap` property|
-|`roughnessmap`|[`Material.roughnessMap` property](https://threejs.org/docs/#MeshStandardMaterial.roughnessMap)|
-|`shadows`|[`Renderer.shadowMap.enabled` property](https://threejs.org/docs/#Renderer.shadowMap)|
-|`skinning`|`SkinnedMesh`|
+|`bumpmap`|`Material.bumpMap`|
+|`clipping`|[`Material.clippingPlanes`](https://threejs.org/docs/#Material.clippingPlanes) (or [`WebGLRenderer.clippingPlanes`](https://threejs.org/docs/#WebGLRenderer.clippingPlanes))|
+|`colors`|[`Material.vertexColors`](https://threejs.org/docs/#Material.vertexColors)|
+|`colorspace`|*Automatically included by all materials (except `RawShaderMaterial`)*|
+|`displacementmap`|`Material.displacementMap`|
+|`dithering`|[`Material.dithering`](https://threejs.org/docs/#Material.dithering)|
+|`emissivemap`|`Material.emissiveMap`|
+|`envmap`|`Material.envMap` (or [`Scene.environment`](https://threejs.org/docs/#Scene.environment))|
+|`fog`|[`Scene.fog`](https://threejs.org/docs/#Scene.fog)|
+|`iridescence`|[`Material.iridescence`](https://threejs.org/docs/#MeshPhysicalMaterial.iridescence) (since revision ≥141)|
+|`lightmap`|`Material.lightMap`|
+|`logdepthbuf`|[`Renderer.logarithmicDepthBuffer`](https://threejs.org/docs/#Renderer.logarithmicDepthBuffer)|
+|`map`|`Material.map`|
+|`metalnessmap`|[`Material.metalnessMap`](https://threejs.org/docs/#MeshStandardMaterial.metalnessMap)|
+|`morphtargets`|[`BufferGeometry.morphAttributes`](https://threejs.org/docs/#BufferGeometry.morphAttributes)|
+|`normalmap`|`Material.normalMap`|
+|`roughnessmap`|[`Material.roughnessMap`](https://threejs.org/docs/#MeshStandardMaterial.roughnessMap)|
+|`shadows`|[`Renderer.shadowMap.enabled`](https://threejs.org/docs/#Renderer.shadowMap)|
+|`skinning`|[`SkinnedMesh`](https://threejs.org/docs/#SkinnedMesh)|
 |`specularmap`|`Material.specularMap`|
-|`tonemapping`|[`Renderer.toneMapping` property](https://threejs.org/docs/#Renderer.toneMapping)|
-|`transmission`|[`Material.transmission` property](https://threejs.org/docs/#MeshPhysicalMaterial.transmission)|
+|`tonemapping`|[`Renderer.toneMapping`](https://threejs.org/docs/#Renderer.toneMapping)|
+|`transmission`|[`Material.transmission`](https://threejs.org/docs/#MeshPhysicalMaterial.transmission)|
 
 Check [this handy compatibility table](https://threejs.org/manual/#en/material-table)
 </details>
