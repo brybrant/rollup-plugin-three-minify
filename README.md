@@ -316,7 +316,7 @@ Three.js include(s) to keep in the bundle **(whitelist)**
 > Most `includes` require other "sibling" `includes` to function properly, therefore it is recommended to use the [`features`](#features) option instead for convenience, but you can also use this option for more precise control.
 
 <details>
-<summary>IncludeName</summary>
+<summary>IncludeName Type</summary>
 
 Please check your ShaderChunk source code for a full list of all "includes" relevant to your revision of Three.js:
 ```
