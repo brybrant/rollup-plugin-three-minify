@@ -1,16 +1,24 @@
 import type { IncludeName, Replacer } from './const';
 
+import {
+  recordIdentifiers,
+  countIdentifiers,
+  createIdentifiers,
+  mangleIdentifiers,
+} from './mangler';
+
 import { minifyGLSL } from './minify-glsl';
 
-const shaderRegex = /^((?:const|var) ([a-z0-9$_]+) = )"(.+)"/gm;
-const inlineShaderRegex = /\/\* glsl \*\/`([^]+?)`/g;
+/**
+ * Capture group 1: inline GLSL
+ * Capture group 2: `IncludeName`
+ * capture group 3: include GLSL (has escaped newlines and tabs)
+ */
+const shaderRegex =
+  /\/\* glsl \*\/`([^]+?)`|^(?:const|var) ([a-z0-9$_]+) = "(.+)"/gm;
 
 const escapedNewlineRegex = /\\n/g;
 const escapedTabRegex = /\\t/g;
-
-const inlineShaderReplacer: Replacer = (_, glsl) => {
-  return `/* glsl */\`${minifyGLSL(glsl)}\``;
-};
 
 /**
  * Minify GLSL code
@@ -22,26 +30,53 @@ export function minifyShaders(
   code: string,
   discardIncludes: Set<IncludeName>,
 ): string {
-  /**
-   * Minify GLSL code (skipping shader chunks that we know will be discarded)
-   * @param match `$&`
-   * @param declaration Declaration of include variable (`$1`)
-   * @param include Name of the include variable (`$2`)
-   * @param glsl GLSL shader code (`$3`)
-   * @returns The minified GLSL shader
-   */
-  const shaderReplacer: Replacer = (match, declaration, include, glsl) => {
-    if (discardIncludes.has(include as IncludeName)) return match;
+  recordIdentifiers(code);
 
-    return `${declaration}\`${minifyGLSL(
-      glsl.replace(escapedNewlineRegex, '\n').replace(escapedTabRegex, ' '),
-    )}\``;
+  /**
+   * Count mutable identifiers in each shader chunk
+   * @param match `$&`
+   * @param inline Inline GLSL (`$1`)
+   * @param name Include variable name (`$2`)
+   * @param include Include GLSL code (`$3`)
+   * @returns GLSL (unmodified)
+   */
+  const identifierCounter: Replacer = (match, inline, name, include) => {
+    if (inline) return countIdentifiers(inline);
+
+    /** Skip shader chunks that we know will be discarded via treeshaking */
+    if (discardIncludes.has(name as IncludeName)) return match;
+
+    return countIdentifiers(include);
   };
 
-  code = code.replace(shaderRegex, shaderReplacer);
+  code.replace(shaderRegex, identifierCounter);
 
-  /** Minify inline shader code */
-  code = code.replace(inlineShaderRegex, inlineShaderReplacer);
+  createIdentifiers();
+
+  /**
+   * Minify by removing redundant whitespace and mangling mutable identifiers
+   * @param match `$&`
+   * @param inline Inline GLSL (`$1`)
+   * @param name Include variable name (`$2`)
+   * @param include Include GLSL code (`$3`)
+   * @returns GLSL (minified)
+   */
+  const shaderMinifier: Replacer = (match, inline, name, include) => {
+    if (inline) {
+      return `/* glsl */\`${mangleIdentifiers(minifyGLSL(inline))}\``;
+    }
+
+    /** Skip shader chunks that we know will be discarded via treeshaking */
+    if (discardIncludes.has(name as IncludeName)) return match;
+
+    include = minifyGLSL(
+      include.replace(escapedNewlineRegex, '\n').replace(escapedTabRegex, ' '),
+    );
+
+    return `const ${name} = \`${mangleIdentifiers(include)}\``;
+  };
+
+  code = code.replace(shaderRegex, shaderMinifier);
 
   return code;
 }
