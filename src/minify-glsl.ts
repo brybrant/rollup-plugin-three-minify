@@ -20,7 +20,7 @@ const redundantZeroReplacer: Replacer = (_, a, b, c, d) => {
 };
 
 /** Matches whitespace around symbols */
-const redundantWhitespaceRegex = /\s*([{}=*,+/><&|[\]()\-!?:;])\s*/g;
+const redundantWhitespaceRegex = /\s*([{}=,+/><%^&*|[\]()\-~!?:;])\s*/g;
 
 /** Matches 2 or more consecutive whitespaces */
 const consecutiveWhitespaceRegex = /\s{2,}/g;
