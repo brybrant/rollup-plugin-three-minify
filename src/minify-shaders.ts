@@ -15,7 +15,7 @@ import { minifyGLSL } from './minify-glsl';
  * capture group 3: include GLSL (has escaped newlines and tabs)
  */
 const shaderRegex =
-  /\/\* glsl \*\/`([^]+?)`|^(?:const|var) ([a-z0-9$_]+) = "(.+)"/gm;
+  /\/\* glsl \*\/`([^]+?)`|^(?:const|var) ([a-z0-9$_]+) = ["`]([^]+?)["`];$/gm;
 
 const escapedNewlineRegex = /\\n/g;
 const escapedTabRegex = /\\t/g;
