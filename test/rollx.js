@@ -1,3 +1,4 @@
+import { writeFile } from 'node:fs/promises';
 /**
  * Only run this script from the root directory using one of the following:
  * - `npm run rollup`
@@ -5,7 +6,6 @@
  */
 import { env } from 'node:process';
 
-import html from '@rollup/plugin-html';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import threeMinifyPlugin from 'rollup-plugin-three-minify';
 
@@ -29,30 +29,28 @@ function createConfig(name, options) {
       output: {
         file: `./test/rollx/dist/${name}.js`,
       },
-      plugins: [
-        globalPlugin,
-        resolvePlugin,
-        html({
-          fileName: `${name}.html`,
-          template: () => `
-          <!doctype html>
-          <html>
-            <head>
-              <meta charset='utf-8'>
-              <meta name='darkreader-lock'/>
-              <title>${name}</title>
-              <link href='../../index.css' rel='stylesheet'/>
-            </head>
-            <body>
-              <script src='${name}.js'></script>
-            </body>
-          </html>`,
-        }),
-        threeMinifyPlugin(options),
-      ],
+      plugins: [globalPlugin, resolvePlugin, threeMinifyPlugin(options)],
     },
   };
 }
+
+/**
+ * Generate HTML file
+ * @param {string} name
+ */
+const html = (name) => `
+<!doctype html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta name='darkreader-lock'/>
+    <title>${name}</title>
+    <link href='../../index.css' rel='stylesheet'/>
+  </head>
+  <body>
+    <script src='${name}.js'></script>
+  </body>
+</html>`;
 
 const configs = [
   createConfig('basic', {
@@ -115,5 +113,6 @@ const bundler = await import(`roll${roll}`).then(
 for (const config of configs) {
   const build = await bundler(config.config);
   await build.write(config.config.output);
+  await writeFile(`./test/rollx/dist/${config.name}.html`, html(config.name));
   await build.close();
 }
