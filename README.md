@@ -4,7 +4,7 @@ This plugin reduces the bundle size of applications using [Three.js](https://thr
 - Removing redundant `WebGLRenderer` subsystems
 - Removing redundant materials from `ShaderLib`
 - Removing redundant shaders from `ShaderChunk`
-- Minifies GLSL code by removing redundant whitespace
+- Minifies GLSL code by removing redundant whitespace and mangling identifiers
 
 > [!NOTE]
 > This plugin is backwards-compatible with Three.js revisions down to 135. It might work with earlier revisions but I will not guarantee that.
