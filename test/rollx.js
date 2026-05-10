@@ -59,6 +59,8 @@ const configs = [
     debug: true,
     features: 'map',
     materials: 'basic',
+    /** Test `_occlusion_fragment` and `_occlusion_vertex` (since r161) */
+    xr: true,
   }),
   createConfig('depth', {
     debug: true,
@@ -87,6 +89,7 @@ const configs = [
   }),
   createConfig('shadow', {
     debug: true,
+    /** Test `fragment` and `vertex` for WebGLShadowMap */
     features: ['bumpmap', 'shadows'],
     materials: ['lambert', 'phong'],
   }),
