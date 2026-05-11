@@ -235,7 +235,7 @@ Three.js material(s) to keep in the bundle **(whitelist)**
 
 |`MaterialName`|Usage|
 |--|--|
-|`background`|"Flat" textures on `Scene.background`|
+|`background`|"Flat" textures on [`Scene.background`](https://threejs.org/docs/#Scene.background)|
 |`backgroundCube`|Cube or Equirectangular textures on `Scene.background` (since revision ≥146)|
 |`cube`|Same as `backgroundCube` (for revisions <146)|
 |`depth`|`MeshDepthMaterial`|
