@@ -238,21 +238,21 @@ Three.js material(s) to keep in the bundle **(whitelist)**
 |`background`|"Flat" textures on [`Scene.background`](https://threejs.org/docs/#Scene.background)|
 |`backgroundCube`|Cube or Equirectangular textures on `Scene.background` (since revision ≥146)|
 |`cube`|Same as `backgroundCube` (for revisions <146)|
-|`depth`|`MeshDepthMaterial`|
-|`distance`|`MeshDistanceMaterial` (since revision ≥182)|
+|`depth`|[`MeshDepthMaterial`](https://threejs.org/docs/#MeshDepthMaterial)|
+|`distance`|[`MeshDistanceMaterial`](https://threejs.org/docs/#MeshDistanceMaterial) (since revision ≥182)|
 |`distanceRGBA`|Same as `distance` (for revisions <182)|
-|`dashed`|`LineDashedMaterial`|
-|`basic`|`LineBasicMaterial` or `MeshBasicMaterial`|
-|`lambert`|`MeshLambertMaterial`|
-|`matcap`|`MeshMatcapMaterial`|
-|`normal`|`MeshNormalMaterial`|
-|`phong`|`MeshPhongMaterial`|
-|`standard`|`MeshStandardMaterial`|
-|`physical`|`MeshPhysicalMaterial`|
-|`toon`|`MeshToonMaterial`|
-|`points`|`PointsMaterial`|
-|`shadow`|`ShadowMaterial`|
-|`sprite`|`SpriteMaterial`|
+|`dashed`|[`LineDashedMaterial`](https://threejs.org/docs/#LineDashedMaterial)|
+|`basic`|[`LineBasicMaterial`](https://threejs.org/docs/#LineBasicMaterial) or [`MeshBasicMaterial`](https://threejs.org/docs/#MeshBasicMaterial)|
+|`lambert`|[`MeshLambertMaterial`](https://threejs.org/docs/#MeshLambertMaterial)|
+|`matcap`|[`MeshMatcapMaterial`](https://threejs.org/docs/#MeshMatcapMaterial)|
+|`normal`|[`MeshNormalMaterial`](https://threejs.org/docs/#MeshNormalMaterial)|
+|`phong`|[`MeshPhongMaterial`](https://threejs.org/docs/#MeshPhongMaterial)|
+|`standard`|[`MeshStandardMaterial`](https://threejs.org/docs/#MeshStandardMaterial)|
+|`physical`|[`MeshPhysicalMaterial`](https://threejs.org/docs/#MeshPhysicalMaterial)|
+|`toon`|[`MeshToonMaterial`](https://threejs.org/docs/#MeshToonMaterial)|
+|`points`|[`PointsMaterial`](https://threejs.org/docs/#PointsMaterial)|
+|`shadow`|[`ShadowMaterial`](https://threejs.org/docs/#ShadowMaterial)|
+|`sprite`|[`SpriteMaterial`](https://threejs.org/docs/#SpriteMaterial)|
 </details>
 
 ___
