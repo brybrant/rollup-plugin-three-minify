@@ -35,7 +35,7 @@ export default function (userOptions: UserOptions = {}): Plugin {
 
         const webglModule = id.endsWith('three.module.js');
 
-        if (revision < 171 || (revision > 170 && !webglModule)) {
+        if (revision < 171 || (revision >= 171 && !webglModule)) {
           if (!options.jsonMethods) {
             /** Remove `toJSON` and `fromJSON` methods on all classes */
             code = code.replace(
