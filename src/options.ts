@@ -416,6 +416,8 @@ export const parseOptions = (options: UserOptions): Options => {
   }
 
   if (
+    userIncludes.has('batching_pars_vertex') ||
+    userIncludes.has('batching_vertex') ||
     userIncludes.has('gradientmap_pars_fragment') ||
     userIncludes.has('transmission_fragment') ||
     userIncludes.has('transmission_pars_fragment') ||

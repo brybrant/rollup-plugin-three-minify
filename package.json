@@ -1,6 +1,6 @@
 {
   "name": "rollup-plugin-three-minify",
-  "description": "Minify THREE.js shader code, and remove redundant code",
+  "description": "Minify Three.js shader code, and remove redundant code",
   "keywords": [
     "rollup-plugin",
     "rolldown-plugin",
@@ -10,7 +10,7 @@
   ],
   "author": "brybrant",
   "license": "GPL-3.0-only",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "types": "./dist/index.d.mts",
   "main": "./dist/index.cjs",
