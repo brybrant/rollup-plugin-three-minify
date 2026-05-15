@@ -289,18 +289,23 @@ Check [this handy Material Feature compatibility table](https://threejs.org/manu
 |`fog`|[`Scene.fog`](https://threejs.org/docs/#Scene.fog)|
 |`iridescence`|[`Material.iridescence`](https://threejs.org/docs/#MeshPhysicalMaterial.iridescence) (since revision ≥141)|
 |`lightmap`|`Material.lightMap`|
+|`lights`|For any shader which responds to lights<sup>[[1](#feature-caveat1)]</sup>|
 |`logdepthbuf`|[`Renderer.logarithmicDepthBuffer`](https://threejs.org/docs/#Renderer.logarithmicDepthBuffer)|
 |`map`|`Material.map`|
 |`metalnessmap`|[`Material.metalnessMap`](https://threejs.org/docs/#MeshStandardMaterial.metalnessMap)|
 |`morphtargets`|[`BufferGeometry.morphAttributes`](https://threejs.org/docs/#BufferGeometry.morphAttributes)|
 |`normalmap`|`Material.normalMap`|
+|`normals`|For any shader which uses the `normal` geometry attribute<sup>[[1](#feature-caveat1)]</sup>|
 |`roughnessmap`|[`Material.roughnessMap`](https://threejs.org/docs/#MeshStandardMaterial.roughnessMap)|
 |`shadows`|[`Renderer.shadowMap.enabled`](https://threejs.org/docs/#Renderer.shadowMap)|
 |`skinning`|[`SkinnedMesh`](https://threejs.org/docs/#SkinnedMesh)|
 |`specularmap`|`Material.specularMap`|
 |`tonemapping`|[`Renderer.toneMapping`](https://threejs.org/docs/#Renderer.toneMapping)|
 |`transmission`|[`Material.transmission`](https://threejs.org/docs/#MeshPhysicalMaterial.transmission)|
+|`vertices`|For any shader which uses the `position` geometry attribute<sup>[[1](#feature-caveat1)]</sup>|
 </details>
+<a name="feature-caveat1"></a>
+<sup>[1]</sup> This feature is automatically included by applicable Three.js materials, so exists only as convenience for authoring custom shaders.
 
 ___
 ### `includes`

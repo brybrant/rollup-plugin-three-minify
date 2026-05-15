@@ -10,7 +10,7 @@
   ],
   "author": "brybrant",
   "license": "GPL-3.0-only",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "types": "./dist/index.d.mts",
   "main": "./dist/index.cjs",
@@ -43,7 +43,7 @@
   "devDependencies": {
     "@brybrant/eslint-config": "^1.0.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
-    "rollup": "^4.60.3",
+    "rollup": "^4.60.4",
     "rollup-plugin-three-minify": ".",
     "three": "^0.184.0",
     "tsdown": "^0.22.0",

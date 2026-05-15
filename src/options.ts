@@ -366,10 +366,11 @@ export const parseOptions = (options: UserOptions): Options => {
   }
 
   if (
-    userIncludes.has('lightprobes_pars_fragment') ||
-    /** Perhaps user wants Three.js lights on `RawShaderMaterial`? */
-    userIncludes.has('lights_pars_begin') ||
     subsystems.shadowmap ||
+    userIncludes.has('lightprobes_pars_fragment') ||
+    userIncludes.has('lights_fragment_begin') ||
+    userIncludes.has('lights_fragment_end') ||
+    userIncludes.has('lights_pars_begin') ||
     /** Many materials require light */
     userMaterials.has('lambert') ||
     userMaterials.has('phong') ||

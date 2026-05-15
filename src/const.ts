@@ -297,6 +297,8 @@ export const features = {
     'lightmap_pars_fragment',
     'lights_fragment_maps',
   ]),
+  /** For any shader which responds to lights */
+  lights: ['lights_fragment_begin', 'lights_fragment_end', 'lights_pars_begin'],
   /** `Renderer.logarithmicDepthBuffer` */
   logdepthbuf: [
     'common',
@@ -319,6 +321,15 @@ export const features = {
   ]),
   /** `Material.normalMap` */
   normalmap: [...uvs, 'normal_fragment_maps', 'normalmap_pars_fragment'],
+  /** For any shader which uses the `normal` geometry attribute */
+  normals: [
+    'beginnormal_vertex',
+    'defaultnormal_vertex',
+    'normal_pars_fragment',
+    'normal_pars_vertex',
+    'normal_fragment_begin',
+    'normal_vertex',
+  ],
   /** `Material.roughnessMap` */
   roughnessmap: [...uvs, 'roughnessmap_fragment', 'roughnessmap_pars_fragment'],
   /** `Renderer.shadowMap.enabled` */
@@ -350,27 +361,11 @@ export const features = {
     'transmission_pars_fragment',
     'worldpos_vertex',
   ],
+  /** For any shader which uses the `position` geometry attribute */
+  vertices: ['begin_vertex', 'project_vertex'],
 } satisfies Record<string, IncludeName[]>;
 
 export type FeatureName = keyof typeof features;
-
-const coreVertex = ['begin_vertex', 'project_vertex'] as const;
-
-/** Not necessarily required (if all materials have flat shading) */
-const coreNormal = [
-  'beginnormal_vertex',
-  'defaultnormal_vertex',
-  'normal_pars_fragment',
-  'normal_pars_vertex',
-  'normal_fragment_begin',
-  'normal_vertex',
-] as const;
-
-const coreLights = [
-  'lights_fragment_begin',
-  'lights_fragment_end',
-  'lights_pars_begin',
-] as const;
 
 const coreOpaque = getIncludes(['output_fragment', 'opaque_fragment']);
 
@@ -380,7 +375,11 @@ export const cubeMaterial = revision < 146 ? 'cube' : 'backgroundCube';
 /** `ShaderLib` key for `distance` material was renamed in Three.js r182 */
 export const distanceMaterial = revision < 182 ? 'distanceRGBA' : 'distance';
 
-const distanceIncludes = [...coreVertex, 'common', 'worldpos_vertex'] as const;
+const distanceIncludes = [
+  ...features.vertices,
+  'common',
+  'worldpos_vertex',
+] as const;
 
 /**
  * Conditional material include helper
@@ -411,7 +410,7 @@ export const materials = computeStatus({
    * with a `mapping` property value that is *not* `UVMapping`
    */
   backgroundCube: {
-    includes: [...coreVertex, 'common', 'cube_uv_reflection_fragment'],
+    includes: [...features.vertices, 'common', 'cube_uv_reflection_fragment'],
     since: 146,
   },
   /**
@@ -419,14 +418,14 @@ export const materials = computeStatus({
    */
   cube: {
     includes: [
-      ...coreVertex,
+      ...features.vertices,
       ...includeIf(revision < 146, ['envmap_fragment']),
       'common',
     ],
   },
   /** `MeshDepthMaterial` */
   depth: {
-    includes: [...coreVertex, 'packing'],
+    includes: [...features.vertices, 'packing'],
   },
   /** `MeshDistanceMaterial` */
   distance: { includes: distanceIncludes, since: 182 },
@@ -434,23 +433,23 @@ export const materials = computeStatus({
   distanceRGBA: { includes: distanceIncludes, deprecated: 182 },
   /** Apparently unused? Might be vestigial */
   equirect: {
-    includes: [...coreVertex, 'common'],
+    includes: [...features.vertices, 'common'],
   },
   /** `LineDashedMaterial` */
   dashed: {
-    includes: [...coreOpaque, ...coreVertex],
+    includes: [...coreOpaque, ...features.vertices],
   },
   /** `LineBasicMaterial` | `MeshBasicMaterial` */
   basic: {
-    includes: [...coreOpaque, ...coreVertex, 'common'],
+    includes: [...coreOpaque, ...features.vertices, 'common'],
   },
   /** `MeshLambertMaterial` */
   lambert: {
     includes: [
-      ...coreLights,
-      ...coreNormal,
       ...coreOpaque,
-      ...coreVertex,
+      ...features.lights,
+      ...features.normals,
+      ...features.vertices,
       ...includeIf(revision < 151, ['bsdfs']),
       ...includeIf(revision < 144, ['shadowmask_pars_fragment']),
       ...getIncludes([
@@ -464,23 +463,23 @@ export const materials = computeStatus({
   },
   /** `MeshMatcapMaterial` */
   matcap: {
-    includes: [...coreOpaque, ...coreNormal, ...coreVertex],
+    includes: [...coreOpaque, ...features.normals, ...features.vertices],
   },
   /** `MeshNormalMaterial` */
   normal: {
     includes: [
-      ...coreNormal,
-      ...coreVertex,
+      ...features.normals,
+      ...features.vertices,
       ...includeIf(revision < 182, ['packing']),
     ],
   },
   /** `MeshPhongMaterial` */
   phong: {
     includes: [
-      ...coreLights,
-      ...coreNormal,
       ...coreOpaque,
-      ...coreVertex,
+      ...features.lights,
+      ...features.normals,
+      ...features.vertices,
       'common',
       'bsdfs',
       'lights_phong_fragment',
@@ -497,10 +496,10 @@ export const materials = computeStatus({
   /** `MeshPhysicalMaterial` (extends `MeshStandardMaterial`) */
   physical: {
     includes: [
-      ...coreLights,
-      ...coreNormal,
       ...coreOpaque,
-      ...coreVertex,
+      ...features.lights,
+      ...features.normals,
+      ...features.vertices,
       ...includeIf(revision < 151, ['bsdfs']),
       'common',
       'lights_physical_fragment',
@@ -512,10 +511,10 @@ export const materials = computeStatus({
   /** `MeshToonMaterial` */
   toon: {
     includes: [
-      ...coreLights,
-      ...coreNormal,
       ...coreOpaque,
-      ...coreVertex,
+      ...features.lights,
+      ...features.normals,
+      ...features.vertices,
       ...includeIf(revision < 151, ['bsdfs']),
       'common',
       'gradientmap_pars_fragment',
@@ -525,13 +524,13 @@ export const materials = computeStatus({
   },
   /** `PointsMaterial` */
   points: {
-    includes: [...coreOpaque, ...coreVertex, 'common'],
+    includes: [...coreOpaque, ...features.vertices, 'common'],
   },
   /** `ShadowMaterial` */
   shadow: {
     includes: [
-      ...coreVertex,
       ...features.shadows,
+      ...features.vertices,
       ...includeIf(revision < 151, ['bsdfs']),
       'lights_pars_begin',
       'shadowmask_pars_fragment',
