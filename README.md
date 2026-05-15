@@ -303,9 +303,10 @@ Check [this handy Material Feature compatibility table](https://threejs.org/manu
 |`tonemapping`|[`Renderer.toneMapping`](https://threejs.org/docs/#Renderer.toneMapping)|
 |`transmission`|[`Material.transmission`](https://threejs.org/docs/#MeshPhysicalMaterial.transmission)|
 |`vertices`|For any shader which uses the `position` geometry attribute<sup>[[1]](#feature-caveat1)</sup>|
-</details>
+
 <a name="feature-caveat1"></a>
 <sup>[1]</sup> *This feature is automatically included by applicable Three.js materials, so exists only as convenience for authoring custom shaders.*
+</details>
 
 ___
 ### `includes`
