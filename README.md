@@ -151,6 +151,7 @@ Set this option to `false` to help debug shader errors.
 <summary>Mangle Example</summary>
 
 Only "mutable" identifiers from Three.js GLSL code will be mangled.
+
 All "immutable" identifiers (such as uniforms) will remain unchanged.
 
 ```glsl
