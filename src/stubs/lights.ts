@@ -4,7 +4,7 @@ import type { Options } from '../options';
 
 const warning = JSON.stringify(`[${name}]:
 Support for lights has been removed.
-If you wish to use lights then you must include the "shadows" feature or at least one of the following materials in the plugin options:
+If you wish to use lights then you must include the "lights" feature or at least one of the following materials in the plugin options:
 - "lambert"
 - "phong"
 - "shadow"

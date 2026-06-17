@@ -20,17 +20,10 @@ await build({
   },
   plugins: [
     globalPlugin,
-    {
-      ...threeMinifyPlugin({
-        debug: true,
-        materials: 'physical',
-      }),
-      /**
-       * `apply` property is redundant here because this is always in `build`
-       * phase, but included for demonstration only.
-       */
-      apply: 'build',
-    },
+    threeMinifyPlugin({
+      debug: true,
+      materials: 'physical',
+    }),
   ],
   root: './test/vite',
 });

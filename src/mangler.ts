@@ -1,4 +1,3 @@
-// @ts-expect-error No declaration
 import { UniformsLib } from 'three';
 
 import { type Replacer, revision } from './const';
@@ -59,21 +58,10 @@ const reserved = new Set([
   ...threeFunctions,
 ]);
 
-type UniformsLib = {
-  [uniformGroup: string]: {
-    [uniformName: string]: {
-      value: unknown;
-      properties?: {
-        [property: string]: unknown;
-      };
-    };
-  };
-};
-
 /**
  * Adds all Uniforms (and properties of `struct` type uniforms) to `reserved`
  */
-for (const uniformGroup of Object.values(UniformsLib as UniformsLib)) {
+for (const uniformGroup of Object.values(UniformsLib)) {
   for (const [uniformName, uniformValue] of Object.entries(uniformGroup)) {
     reserved.add(uniformName);
 
@@ -122,156 +110,135 @@ const declarationRegex = new RegExp(
   'g',
 );
 
-type IdentifierMetadata = {
-  /** How many times the identifier occurs throughout the shader code */
-  frequency: number;
-  /** New identifier (following the pattern `_[a-zA-Z0-9]+`) */
-  mangle: string;
-};
-
-/** Map of "mutable" identifiers */
-const identifiers: Map<string, IdentifierMetadata> = new Map();
+/** Map which records the frequency of mutable identifiers in the GLSL */
+type IdentifierMap = Map<string, number>;
 
 const componentRegex = /^([xyzw]{1,4}|[rgba]{1,4}|[stpq]{1,4})$/;
 
-const identifierRecorder: Replacer = (match, immutable, type, identifier) => {
-  if (immutable) {
-    reserved.add(identifier);
-    identifiers.delete(identifier);
-    return match;
-  }
-
-  if (
-    reserved.has(identifier) ||
-    identifier.length < 3 ||
-    (type === 'void' && identifier === 'main')
-  ) {
-    return match;
-  }
-
-  if (componentRegex.test(identifier)) return match;
-
-  if (!identifiers.has(identifier)) {
-    identifiers.set(identifier, { frequency: 0, mangle: '' });
-  }
-
-  return match;
-};
-
-let mutableIdentifierRegex: RegExp;
-
 /**
- * Add each mutable identifier to `identifiers` record for later mangling
+ * Create an identifier frequency map, and a regular expression to find them
  * @param code code
+ * @returns `{ identifiers, identifierRegex }`
  */
 export function recordIdentifiers(code: string) {
+  /** Map of "mutable" identifiers */
+  const identifiers: IdentifierMap = new Map();
+
+  /** Create a local copy of `reserved` for mutation within this scope */
+  const reservedIdentifiers = new Set(reserved);
+
+  const identifierRecorder: Replacer = (match, immutable, type, identifier) => {
+    if (immutable) {
+      reservedIdentifiers.add(identifier);
+      identifiers.delete(identifier);
+      return match;
+    }
+
+    if (
+      reservedIdentifiers.has(identifier) ||
+      identifier.length < 3 ||
+      (type === 'void' && identifier === 'main')
+    ) {
+      return match;
+    }
+
+    if (componentRegex.test(identifier)) return match;
+
+    if (!identifiers.has(identifier)) identifiers.set(identifier, 0);
+
+    return match;
+  };
+
   code.replace(declarationRegex, identifierRecorder);
 
   /** This should be impossible */
   if (identifiers.size < 1) {
-    throw new Error('No mutable GLSL identifiers found!');
+    throw new Error('Internal error: No mutable GLSL identifiers found!');
   }
 
-  /** Create a regular expression to find mutable identifiers */
-  mutableIdentifierRegex = new RegExp(
+  /** Regex to find *all* mutable identifiers */
+  const identifierRegex = new RegExp(
     `\\b(${[...identifiers.keys()]
       .sort((a, b) => b.length - a.length)
       .join('|')})\\b`,
     'g',
   );
+
+  return {
+    identifiers,
+    identifierRegex,
+  };
 }
 
-const identifierCounter: Replacer = (match) => {
-  const metadata = identifiers.get(match);
+const dictionary =
+  'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
-  if (metadata === undefined) return match;
-
-  metadata.frequency++;
-
-  return match;
-};
-
-/**
- * Searches `glsl` for all `identifiers` and counts the frequency of each one
- * @param glsl glsl
- * @returns `glsl` (unmodified)
- */
-export function countIdentifiers(glsl: string) {
-  glsl.replace(mutableIdentifierRegex, identifierCounter);
-
-  return glsl;
-}
+const baseDictionary = dictionary.length;
 
 /**
  * Sort identifiers by frequency, then create a new unique identifier for each
  * - The most frequent identifiers get the shortest new identifier
  * - The least frequent identifiers get the longest new identifier
+ *
+ * Builds an immutable map correlating old identifiers to new identifiers.
+ *
+ * Returns a "mangler" function which replaces all identifiers.
+ * @param identifiers Map of mutable identifiers
+ * @returns mangler
  */
-export function createIdentifiers() {
-  const dictionary =
-    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-
-  const baseDictionary = dictionary.length;
-
+export function createMangler(identifiers: IdentifierMap) {
   let counter = 0;
 
   /** @returns Unique GLSL identifier */
   function getIdentifier(): string {
-    let n = counter;
-    let identifier = dictionary[n % baseDictionary];
-    n = Math.floor(n / baseDictionary);
+    let n = counter++;
+    let identifier = '';
 
-    while (n > 0) {
+    do {
       identifier = dictionary[n % baseDictionary] + identifier;
-      n = Math.floor(n / baseDictionary);
-    }
-
-    counter++;
+      n = Math.floor(n / baseDictionary) - 1;
+    } while (n >= 0);
 
     return identifier;
   }
 
-  [...identifiers.entries()]
-    .filter(([identifier, meta]) => {
-      if (meta.frequency === 0) identifiers.delete(identifier);
-      return meta.frequency > 0;
-    })
-    .sort(([, meta1], [, meta2]) => meta2.frequency - meta1.frequency)
-    .forEach(([identifier, meta]) => {
-      const newIdentifier = getIdentifier();
+  const mangleMap: Readonly<{ [identifier: string]: string }> = Object.freeze(
+    Object.fromEntries(
+      [...identifiers.entries()]
+        .filter(([, frequency]) => frequency > 0)
+        .sort(([, frequency1], [, frequency2]) => frequency2 - frequency1)
+        .flatMap(([identifier]) => {
+          const newIdentifier = getIdentifier();
 
-      /**
-       * This check will probably always be redundant because `getIdentifier`
-       * can produce 3906 unique identifiers up to 2 characters in length.
-       * - The new identifier is always prefixed by an underscore.
-       * - We only mangle identifiers which are at least 3 characters long.
-       * - I have not yet observed `identifiers.size` being larger than ~700.
-       */
-      if (newIdentifier.length + 1 > identifier.length) {
-        identifiers.delete(identifier);
-        console.log(
-          `Identifier "${newIdentifier}" longer than "${identifier}"`,
-        );
-        return counter--;
-      }
+          /**
+           * This check is probably forever redundant because `getIdentifier`
+           * can produce 3906 unique identifiers up to 2 characters in length.
+           * - The new identifier is always prefixed by an underscore.
+           * - We only mangle identifiers which are at least 3 characters long.
+           * - I have not yet seen `identifiers.size` become larger than 600.
+           */
+          if (newIdentifier.length + 1 > identifier.length) {
+            console.log(
+              `Identifier "${newIdentifier}" longer than "${identifier}"`,
+            );
+            counter--;
+            return [];
+          }
 
-      meta.mangle = newIdentifier;
-    });
-}
+          return [[identifier, newIdentifier]];
+        }),
+    ),
+  );
 
-const mutableReplacer: Replacer = (match) => {
-  const metadata = identifiers.get(match);
+  /** Regex to find *relevant* mutable identifiers */
+  const identifierRegex = new RegExp(
+    `\\b(${Object.keys(mangleMap)
+      .sort((a, b) => b.length - a.length)
+      .join('|')})\\b`,
+    'g',
+  );
 
-  if (metadata === undefined) return match;
+  const mutableReplacer: Replacer = (match) => `_${mangleMap[match]}`;
 
-  return `_${metadata.mangle}`;
-};
-
-/**
- * Mangles the mutable identifiers in `glsl`
- * @param glsl GLSL shader code
- * @returns `glsl` with mangled identifiers
- */
-export function mangleIdentifiers(glsl: string) {
-  return glsl.replace(mutableIdentifierRegex, mutableReplacer);
+  return (glsl: string) => glsl.replace(identifierRegex, mutableReplacer);
 }

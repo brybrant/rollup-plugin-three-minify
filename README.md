@@ -15,7 +15,7 @@ This plugin reduces the bundle size of applications using [Three.js](https://thr
 - The `WebGLRenderer` class includes many optional subsystems which are never removed by tree-shaking. This plugin will determine the necessary subsystems based on your [options](#options) and replace any unused subsystems with no-op stubs.
 
 > [!WARNING]
-> By default, this plugin behaves as a **whitelist** and will remove **ALL** GLSL code and optional subsystems. You must specify exactly which [features](#features) and [materials](#materials) your application requires, and everything else will be removed.
+> By default, this plugin behaves as a **whitelist** and will remove **ALL** GLSL code and optional subsystems. You must specify exactly which [features](#features) and [materials](#materials) your application requires; everything else will be removed.
 
 ## Install
 
@@ -54,11 +54,7 @@ import threeMinifyPlugin from 'rollup-plugin-three-minify';
 
 export default defineConfig({
   plugins: [
-    {
-      ...threeMinifyPlugin(),
-      // Only minify Three.js on `build` phase!
-      apply: 'build',
-    },
+    threeMinifyPlugin(),
     // Other plugins...
   ],
 });
@@ -113,6 +109,162 @@ This Rollup configuration will remove all shaders and subsystems that are not re
 
 ## Options
 
+### `include`
+
+- **Type:** `string | string[]`
+- **Default:** `['**/*.glsl']`
+
+Glob pattern(s) matching GLSL files to transform (mangle and minify)
+
+> [!NOTE]
+> Each glob must be a valid [picomatch](https://github.com/micromatch/picomatch#globbing-features) pattern.
+> Globs are resolved relative to the current working directory.
+
+---
+### `exclude`
+
+- **Type:** `string | string[]`
+- **Default:** `[]`
+
+Glob pattern(s) matching GLSL files to ignore
+
+> [!NOTE]
+> Each glob must be a valid [picomatch](https://github.com/micromatch/picomatch#globbing-features) pattern.
+> Globs are resolved relative to the current working directory.
+
+---
+### `mangle`
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+When enabled, mutable GLSL identifiers will be mangled to further minify GLSL code and improve compression.
+
+Set this option to `false` to help debug shader errors.
+
+> [!NOTE]
+> Mangled identifiers will always match this regex: `_[a-zA-Z0-9]+`
+> 
+> If you keep this option enabled, please avoid using identifiers which start with an underscore (`_`) in your GLSL code to avoid naming conflicts.
+
+<details>
+<summary>Mangle Example</summary>
+
+"mutable" identifiers will be mangled (if they exist in Three.js)
+
+|Identifier|Mangled Identifier<sup>[[1]](#mangle-caveat1)</sup>|
+|--|--|
+|`vViewPosition`|`_a`|
+|`vNormal`|`_b`|
+|`objectNormal`|`_c`|
+|`transformedNormal`|`_d`|
+|`transformed`|`_e`|
+|`mvPosition`|`_f`|
+
+"immutable" identifiers will remain unchanged:
+- `normal`
+- `normalMatrix`
+- `position`
+- `modelViewMatrix`
+- `projectionMatrix`
+- `gl_Position`
+
+```glsl
+// vertex.glsl
+varying vec3 vViewPosition;
+varying vec3 vNormal;
+
+void main() {
+  vec3 objectNormal = vec3( normal );
+  vec3 transformedNormal = objectNormal;
+  transformedNormal = normalMatrix * transformedNormal;
+  vNormal = normalize( transformedNormal );
+
+  vec3 transformed = vec3( position );
+  vec4 mvPosition = vec4( transformed, 1.0 );
+  mvPosition = modelViewMatrix * mvPosition;
+  gl_Position = projectionMatrix * mvPosition;
+
+  vViewPosition = - mvPosition.xyz;
+}
+```
+
+"mutable" identifiers will be mangled (if they exist in Three.js)
+
+|Identifier|Mangled Identifier<sup>[[1]](#mangle-caveat1)</sup>|
+|--|--|
+|`vViewPosition`|`_a`|
+|`vNormal`|`_b`|
+|`diffuseColor`|`_g`|
+|`rimGlow`|(not transformed because it does not exist in Three.js)|
+
+"immutable" identifiers will remain unchanged:
+- `diffuse`
+- `opacity`
+- `gl_FragColor`
+
+<a name="mangle-caveat1"></a>
+<sup>[1]</sup> *The mangled identifiers are only examples for this demonstration and in reality may be different because this plugin counts the frequency of each mutable identifier before generating mangled identifiers to ensure the most frequent identifiers get the shortest mangled identifiers for optimal compression.*
+
+```glsl
+// fragment.glsl
+uniform vec3 diffuse;
+uniform float opacity;
+
+varying vec3 vViewPosition;
+varying vec3 vNormal;
+
+void main() {
+  vec4 diffuseColor = vec4( diffuse, opacity );
+
+  float rimGlow = 1.0 - max( 0.0, dot( vNormal, normalize( vViewPosition ) ) );
+  rimGlow = pow( rimGlow, 10.0 );
+  diffuseColor.rgb += vec3( 1.0 ) * rimGlow;
+
+  gl_FragColor = diffuseColor;
+}
+```
+
+```js
+// index.js
+import { Color, ShaderMaterial } from 'three';
+
+/* GLSL will be minified and mangled when you import it */
+import vertexShader from 'vertex.glsl';
+import fragmentShader from 'fragment.glsl';
+
+/* Usage example */
+const material = new ShaderMaterial({
+  uniforms: {
+    diffuse: {
+      value: new Color(0),
+    },
+    opacity: {
+      value: 1.0,
+    },
+  },
+  vertexShader,
+  fragmentShader,
+});
+// ...
+```
+
+```js
+// rollup.config.js
+import threeMinifyPlugin from 'rollup-plugin-three-minify';
+
+export default {
+  input: 'index.js',
+  plugins: [
+    threeMinifyPlugin({
+      mangle: true, /* true by default */
+    }),
+  ],
+};
+```
+</details>
+
+---
 ### `colorKeywords`
 
 - **Type:** `boolean`
@@ -226,9 +378,9 @@ ___
 Three.js material(s) to keep in the bundle **(whitelist)**
 
 > [!NOTE]
-> Every material (except `RawShaderMaterial`) requires a specific set of [`includes`](#includes) to render, otherwise the renderer will crash.
+> Every material (except `RawShaderMaterial`) requires a specific set of [`chunks`](#chunks) to render, otherwise the renderer will crash.
 > 
-> This plugin will keep only the necessary `includes` for each material in this option. Some optional material features will not work unless you specify them in the [`features`](#features) option.
+> This plugin will keep only the necessary `chunks` for each material in this option. Some optional material features will not work unless you specify them in the [`features`](#features) option.
 
 <details>
 <summary>MaterialName Type</summary>
@@ -264,7 +416,7 @@ ___
 Three.js feature(s) to keep in the bundle **(whitelist)**
 
 > [!NOTE]
-> Each "feature" refers to a group of interdependent [`includes`](#includes) and is thus a safer way to define the requirements of your application.
+> Each "feature" refers to a group of interdependent [`chunks`](#chunks) and is thus a safer way to define the requirements of your application.
 
 <details>
 <summary>FeatureName Type</summary>
@@ -309,22 +461,22 @@ Check [this handy Material Feature compatibility table](https://threejs.org/manu
 </details>
 
 ___
-### `includes`
+### `chunks`
 
-- **Type:** `IncludeName | IncludeName[]`
+- **Type:** `ChunkName | ChunkName[]`
 - **Default:** `[]`
 
-Three.js include(s) to keep in the bundle **(whitelist)**
+Three.js shader chunk(s) to keep in the bundle **(whitelist)**
 
 > [!NOTE]
-> I use the word "include" to mean keys of `ShaderChunk`, because they correlate to pieces of GLSL code which are injected via `#include <xyz>` directives at runtime by `WebGLProgram`.
+> The word "chunks" refers to entries of `ShaderChunk`, which are pieces of GLSL code injected into shaders at runtime via `#include <xyz>` directives by `WebGLProgram`.
 > 
-> Most `includes` require other "sibling" `includes` to function properly, therefore it is recommended to use the [`features`](#features) option instead for convenience, but you can also use this option for more precise control.
+> Most `chunks` require other "sibling" `chunks` to function properly, therefore it is recommended to use the [`features`](#features) option instead for convenience, but you can also use this option for more precise control.
 
 <details>
-<summary>IncludeName Type</summary>
+<summary>ChunkName Type</summary>
 
-Please check your ShaderChunk source code for a full list of all "includes" relevant to your revision of Three.js:
+Please check your ShaderChunk source code for a full list of all "chunks" relevant to your revision of Three.js:
 ```
 .../node_modules/three/src/renderers/shaders/ShaderChunk
 ```
@@ -340,7 +492,7 @@ The `WebGLRenderer` class uses a subsystem called `WebGLTextures` which is respo
 
 Set this option to `true` if your application uses textures in ways that cannot be inferred by your selection of [`materials`](#materials) or [`features`](#features) (for example, if your application uses render targets or custom shaders).
 
-___
+---
 ### `debug`
 
 - **Type:** `boolean`
@@ -358,8 +510,10 @@ When enabled, pruned subsystems will emit a warning if used and explain how to c
 import { WebGLRenderer } from 'three';
 const renderer = new WebGLRenderer();
 
-// Clipping planes will not work because the "clipping" feature is omitted.
-// Debug mode is enabled, so the `WebGLClipping` stub will emit a warning.
+/**
+ * Clipping planes will not work because the "clipping" feature is omitted.
+ * Debug mode is enabled, so the `WebGLClipping` stub will emit a warning.
+ */
 renderer.localClippingEnabled = true;
 ```
 

@@ -100,6 +100,15 @@ const configs = [
     debug: true,
     materials: 'toon',
   }),
+  createConfig('matcap', {
+    debug: true,
+    materials: 'matcap',
+  }),
+  createConfig('custom', {
+    chunks: ['worldpos_vertex'],
+    debug: true,
+    features: ['colorspace', 'dithering', 'normals', 'vertices'],
+  }),
 ];
 
 /**
