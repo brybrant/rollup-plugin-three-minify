@@ -150,24 +150,8 @@ Set this option to `false` to help debug shader errors.
 <details>
 <summary>Mangle Example</summary>
 
-"mutable" identifiers will be mangled (if they exist in Three.js)
-
-|Identifier|Mangled Identifier<sup>[[1]](#mangle-caveat1)</sup>|
-|--|--|
-|`vViewPosition`|`_a`|
-|`vNormal`|`_b`|
-|`objectNormal`|`_c`|
-|`transformedNormal`|`_d`|
-|`transformed`|`_e`|
-|`mvPosition`|`_f`|
-
-"immutable" identifiers will remain unchanged:
-- `normal`
-- `normalMatrix`
-- `position`
-- `modelViewMatrix`
-- `projectionMatrix`
-- `gl_Position`
+Only "mutable" identifiers from Three.js GLSL code will be mangled.
+All "immutable" identifiers (such as uniforms) will remain unchanged.
 
 ```glsl
 // vertex.glsl
@@ -188,23 +172,6 @@ void main() {
   vViewPosition = - mvPosition.xyz;
 }
 ```
-
-"mutable" identifiers will be mangled (if they exist in Three.js)
-
-|Identifier|Mangled Identifier<sup>[[1]](#mangle-caveat1)</sup>|
-|--|--|
-|`vViewPosition`|`_a`|
-|`vNormal`|`_b`|
-|`diffuseColor`|`_g`|
-|`rimGlow`|(not transformed because it does not exist in Three.js)|
-
-"immutable" identifiers will remain unchanged:
-- `diffuse`
-- `opacity`
-- `gl_FragColor`
-
-<a name="mangle-caveat1"></a>
-<sup>[1]</sup> *The mangled identifiers are only examples for this demonstration and in reality may be different because this plugin counts the frequency of each mutable identifier before generating mangled identifiers to ensure the most frequent identifiers get the shortest mangled identifiers for optimal compression.*
 
 ```glsl
 // fragment.glsl
