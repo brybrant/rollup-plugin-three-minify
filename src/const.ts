@@ -1,15 +1,4 @@
-import { REVISION } from 'three';
-
 import type { Options } from './options';
-
-/**
- * This refers to the current (semver) "MINOR" version of Three.js installed.
- * For example, if `0.150.1` is installed, then `revision` will be `150`.
- *
- * This plugin is backwards-compatible with Three.js revisions down to 135.
- * It might work with earlier revisions but I will not guarantee that.
- */
-export const revision = Number(REVISION);
 
 /**
  * `String.replace()` callback function
@@ -19,6 +8,8 @@ export const revision = Number(REVISION);
  */
 export type Replacer = (match: string, ...groups: string[]) => string;
 
+type ChunkArray = ReadonlyArray<ChunkName>;
+
 type Metadata = {
   /** `THREE.REVISION` of addition (assumes available since the beginning) */
   readonly since?: number;
@@ -27,10 +18,11 @@ type Metadata = {
   /** Array of subsystems required by this chunk/feature/material */
   readonly subsystems?: ReadonlyArray<keyof Options['subsystems']>;
   /** Array of chunks required by this feature/material */
-  readonly chunks?: ReadonlyArray<ChunkName>;
+  readonly chunks?: ChunkArray | ((revision: number) => ChunkArray);
 };
 
-export type RuntimeMetadata = Metadata & {
+export type RuntimeMetadata = Omit<Metadata, 'chunks'> & {
+  readonly chunks?: ChunkArray;
   /**
    * - `future` = `revision < since`
    * - `available` = `revision >= since && revision < deprecated`
@@ -38,36 +30,6 @@ export type RuntimeMetadata = Metadata & {
    */
   readonly status: 'future' | 'available' | 'deprecated';
 };
-
-/**
- * Derives the value of `status` for each object entry at runtime
- * @param record Object with values of `Metadata`
- * @returns Object with `status` property added to each value
- */
-function computeStatus<T extends Record<string, Metadata>>(record: T) {
-  const result = {} as { [K in keyof T]: T[K] & RuntimeMetadata };
-
-  for (const key in record) {
-    const metadata = record[key];
-
-    const since = metadata.since ?? -Infinity;
-    const deprecated = metadata.deprecated ?? Infinity;
-
-    let status: RuntimeMetadata['status'];
-
-    if (revision < since) {
-      status = 'future';
-    } else if (revision >= deprecated) {
-      status = 'deprecated';
-    } else {
-      status = 'available';
-    }
-
-    result[key] = { ...metadata, status };
-  }
-
-  return result;
-}
 
 const metadata = {
   alphahash: { since: 154 },
@@ -81,9 +43,9 @@ const metadata = {
  * These "chunks" are injected into material shaders via `#include <shader>`
  * GLSL directives.
  *
- * Check {@link materials} for material shaders.
+ * Check {@link materialsMetadata} for material shaders.
  */
-export const chunks = computeStatus({
+const chunksMetadata = {
   alphahash_fragment: metadata.alphahash,
   alphahash_pars_fragment: metadata.alphahash,
   alphamap_fragment: { subsystems: ['textures'] },
@@ -135,8 +97,8 @@ export const chunks = computeStatus({
   fog_pars_vertex: {},
   fog_vertex: {},
   gradientmap_pars_fragment: { subsystems: ['textures'] },
-  iridescence_fragment: { since: 141 },
-  iridescence_pars_fragment: { since: 141 },
+  iridescence_fragment: metadata.iridescence,
+  iridescence_pars_fragment: metadata.iridescence,
   /** Merged with `lights_fragment_maps` */
   lightmap_fragment: { deprecated: 164, subsystems: ['lights', 'textures'] },
   lightmap_pars_fragment: { subsystems: ['lights', 'textures'] },
@@ -208,18 +170,9 @@ export const chunks = computeStatus({
   /** Merged with `uv_vertex` */
   uv2_vertex: { deprecated: 151, subsystems: ['textures'] },
   worldpos_vertex: {},
-} satisfies Record<string, Metadata>);
+} satisfies Record<string, Metadata>;
 
-export type ChunkName = keyof typeof chunks;
-
-/**
- * Filters `array` by chunks which are available in the current revision
- * @param array Array of chunks
- * @returns Filtered array of chunks
- */
-function getChunks<T extends ChunkName>(array: T[]) {
-  return array.filter((chunk) => chunks[chunk].status === 'available');
-}
+export type ChunkName = keyof typeof chunksMetadata;
 
 const uvs = ['uv_pars_fragment', 'uv_pars_vertex', 'uv_vertex'] as const;
 const uvs2 = ['uv2_pars_fragment', 'uv2_pars_vertex', 'uv2_vertex'] as const;
@@ -228,15 +181,11 @@ const uvs2 = ['uv2_pars_fragment', 'uv2_pars_vertex', 'uv2_vertex'] as const;
  * Each key (feature) corresponds to an array of chunks which the feature
  * absolutely requires to render.
  */
-export const features = computeStatus({
+const featuresMetadata = {
   /** `Material.alphaHash` (Alpha hashed transparency) */
   alphahash: {
     ...metadata.alphahash,
-    chunks: getChunks([
-      'alphahash_fragment',
-      'alphahash_pars_fragment',
-      'common',
-    ]),
+    chunks: ['alphahash_fragment', 'alphahash_pars_fragment', 'common'],
   },
   /** `Material.alphaMap` */
   alphamap: {
@@ -249,7 +198,7 @@ export const features = computeStatus({
   },
   /** `Material.aoMap` (Ambient occlusion map) */
   aomap: {
-    chunks: [
+    chunks: (revision) => [
       ...(revision < 151 ? uvs2 : uvs),
       'aomap_fragment',
       'aomap_pars_fragment',
@@ -260,7 +209,7 @@ export const features = computeStatus({
   /** `BatchedMesh` */
   batching: {
     ...metadata.batching,
-    chunks: getChunks(['batching_pars_vertex', 'batching_vertex']),
+    chunks: ['batching_pars_vertex', 'batching_vertex'],
   },
   /** `Material.bumpMap` */
   bumpmap: {
@@ -291,12 +240,12 @@ export const features = computeStatus({
    * `RawShaderMaterial` (but even then you still probably want to use it!)
    */
   colorspace: {
-    chunks: getChunks([
+    chunks: [
       'colorspace_fragment',
       'colorspace_pars_fragment',
       'encodings_fragment',
       'encodings_pars_fragment',
-    ]),
+    ],
   },
   /** `Material.displacementMap` */
   displacementmap: {
@@ -339,20 +288,17 @@ export const features = computeStatus({
   },
   /** `Material.iridescence` */
   iridescence: {
-    chunks: getChunks([
-      'common',
-      'iridescence_fragment',
-      'iridescence_pars_fragment',
-    ]),
+    ...metadata.iridescence,
+    chunks: ['common', 'iridescence_fragment', 'iridescence_pars_fragment'],
   },
   /** `Material.lightMap` */
   lightmap: {
-    chunks: getChunks([
+    chunks: (revision) => [
       ...(revision < 151 ? uvs2 : uvs),
       'lightmap_fragment',
       'lightmap_pars_fragment',
       'lights_fragment_maps',
-    ]),
+    ],
     subsystems: ['lights', 'textures'],
   },
   /** For any shader which responds to lights */
@@ -387,13 +333,13 @@ export const features = computeStatus({
   },
   /** `BufferGeometry.morphAttributes` (Morph targets) */
   morphtargets: {
-    chunks: getChunks([
+    chunks: [
       'morphcolor_vertex',
       'morphinstance_vertex',
       'morphnormal_vertex',
       'morphtarget_pars_vertex',
       'morphtarget_vertex',
-    ]),
+    ],
     subsystems: ['morphtargets'],
   },
   /** `Material.normalMap` */
@@ -463,9 +409,9 @@ export const features = computeStatus({
   vertices: {
     chunks: ['common', 'begin_vertex', 'project_vertex'],
   },
-} satisfies Record<string, Metadata>);
+} satisfies Record<string, Metadata>;
 
-export type FeatureName = keyof typeof features;
+export type FeatureName = keyof typeof featuresMetadata;
 
 /**
  * Conditional material chunk helper
@@ -480,25 +426,19 @@ function includeIf<T extends readonly ChunkName[]>(
   return condition ? value : [];
 }
 
-const coreOpaque = getChunks(['output_fragment', 'opaque_fragment']);
-
-/** `ShaderLib` key for `cube` material was renamed in Three.js r146 */
-export const cubeMaterial = revision < 146 ? 'cube' : 'backgroundCube';
-
-/** `ShaderLib` key for `distance` material was renamed in Three.js r182 */
-export const distanceMaterial = revision < 182 ? 'distanceRGBA' : 'distance';
+const coreOpaque = ['output_fragment', 'opaque_fragment'] as const;
 
 const distanceChunks = [
-  ...features.vertices.chunks,
+  ...featuresMetadata.vertices.chunks,
   'worldpos_vertex',
 ] as const;
 
 /**
  * Basically `THREE.ShaderLib` with only the necessary chunks + some metadata
  *
- * Check {@link chunks} for all chunks.
+ * Check {@link chunksMetadata} for all chunks.
  */
-export const materials = computeStatus({
+const materialsMetadata = {
   /**
    * Used in `WebGLBackground` when `Scene.background` is a `Texture` value
    * with a `mapping` property value of `UVMapping`
@@ -509,23 +449,24 @@ export const materials = computeStatus({
    * with a `mapping` property value that is *not* `UVMapping`
    */
   backgroundCube: {
-    chunks: [...features.vertices.chunks, 'cube_uv_reflection_fragment'],
+    chunks: [
+      ...featuresMetadata.vertices.chunks,
+      'cube_uv_reflection_fragment',
+    ],
     since: 146,
     subsystems: ['background'],
   },
-  /**
-   * Same as {@link materials.backgroundCube} (Maybe vestigial since r146)
-   */
+  /** Same as {@link materialsMetadata.backgroundCube} (Maybe vestigial since r146) */
   cube: {
-    chunks: [
-      ...features.vertices.chunks,
+    chunks: (revision) => [
+      ...featuresMetadata.vertices.chunks,
       ...includeIf(revision < 146, ['envmap_fragment']),
     ],
     subsystems: ['background'],
   },
   /** `MeshDepthMaterial` */
   depth: {
-    chunks: [...features.vertices.chunks, 'packing'],
+    chunks: [...featuresMetadata.vertices.chunks, 'packing'],
   },
   /** `MeshDistanceMaterial` */
   distance: { chunks: distanceChunks, since: 182 },
@@ -533,30 +474,28 @@ export const materials = computeStatus({
   distanceRGBA: { chunks: distanceChunks, deprecated: 182 },
   /** Apparently unused? Might be vestigial */
   equirect: {
-    chunks: [...features.vertices.chunks],
+    chunks: [...featuresMetadata.vertices.chunks],
   },
   /** `LineDashedMaterial` */
   dashed: {
-    chunks: [...coreOpaque, ...features.vertices.chunks],
+    chunks: [...coreOpaque, ...featuresMetadata.vertices.chunks],
   },
   /** `LineBasicMaterial` | `MeshBasicMaterial` */
   basic: {
-    chunks: [...coreOpaque, ...features.vertices.chunks],
+    chunks: [...coreOpaque, ...featuresMetadata.vertices.chunks],
   },
   /** `MeshLambertMaterial` */
   lambert: {
-    chunks: [
+    chunks: (revision) => [
       ...coreOpaque,
-      ...features.lights.chunks,
-      ...features.normals.chunks,
-      ...features.vertices.chunks,
+      ...featuresMetadata.lights.chunks,
+      ...featuresMetadata.normals.chunks,
+      ...featuresMetadata.vertices.chunks,
       ...includeIf(revision < 151, ['bsdfs']),
       ...includeIf(revision < 144, ['shadowmask_pars_fragment']),
-      ...getChunks([
-        'lights_lambert_fragment',
-        'lights_lambert_pars_fragment',
-        'lights_lambert_vertex',
-      ]),
+      'lights_lambert_fragment',
+      'lights_lambert_pars_fragment',
+      'lights_lambert_vertex',
       'specularmap_fragment',
     ],
     subsystems: ['lights'],
@@ -565,16 +504,16 @@ export const materials = computeStatus({
   matcap: {
     chunks: [
       ...coreOpaque,
-      ...features.normals.chunks,
-      ...features.vertices.chunks,
+      ...featuresMetadata.normals.chunks,
+      ...featuresMetadata.vertices.chunks,
     ],
     subsystems: ['textures'],
   },
   /** `MeshNormalMaterial` */
   normal: {
-    chunks: [
-      ...features.normals.chunks,
-      ...features.vertices.chunks,
+    chunks: (revision) => [
+      ...featuresMetadata.normals.chunks,
+      ...featuresMetadata.vertices.chunks,
       ...includeIf(revision < 182, ['packing']),
     ],
   },
@@ -582,9 +521,9 @@ export const materials = computeStatus({
   phong: {
     chunks: [
       ...coreOpaque,
-      ...features.lights.chunks,
-      ...features.normals.chunks,
-      ...features.vertices.chunks,
+      ...featuresMetadata.lights.chunks,
+      ...featuresMetadata.normals.chunks,
+      ...featuresMetadata.vertices.chunks,
       'bsdfs',
       'lights_phong_fragment',
       'lights_phong_pars_fragment',
@@ -594,11 +533,11 @@ export const materials = computeStatus({
   },
   /** `MeshStandardMaterial` */
   standard: {
-    chunks: [
+    chunks: (revision) => [
       ...coreOpaque,
-      ...features.lights.chunks,
-      ...features.normals.chunks,
-      ...features.vertices.chunks,
+      ...featuresMetadata.lights.chunks,
+      ...featuresMetadata.normals.chunks,
+      ...featuresMetadata.vertices.chunks,
       ...includeIf(revision < 151, ['bsdfs']),
       'lights_physical_fragment',
       'lights_physical_pars_fragment',
@@ -615,11 +554,11 @@ export const materials = computeStatus({
   },
   /** `MeshToonMaterial` */
   toon: {
-    chunks: [
+    chunks: (revision) => [
       ...coreOpaque,
-      ...features.lights.chunks,
-      ...features.normals.chunks,
-      ...features.vertices.chunks,
+      ...featuresMetadata.lights.chunks,
+      ...featuresMetadata.normals.chunks,
+      ...featuresMetadata.vertices.chunks,
       ...includeIf(revision < 151, ['bsdfs']),
       'gradientmap_pars_fragment',
       'lights_toon_fragment',
@@ -629,13 +568,13 @@ export const materials = computeStatus({
   },
   /** `PointsMaterial` */
   points: {
-    chunks: [...coreOpaque, ...features.vertices.chunks],
+    chunks: [...coreOpaque, ...featuresMetadata.vertices.chunks],
   },
   /** `ShadowMaterial` */
   shadow: {
-    chunks: [
-      ...features.shadows.chunks,
-      ...features.vertices.chunks,
+    chunks: (revision) => [
+      ...featuresMetadata.shadows.chunks,
+      ...featuresMetadata.vertices.chunks,
       ...includeIf(revision < 151, ['bsdfs']),
       'lights_pars_begin',
       'shadowmask_pars_fragment',
@@ -646,6 +585,80 @@ export const materials = computeStatus({
   sprite: {
     chunks: [...coreOpaque, 'common'],
   },
-} satisfies Record<string, Metadata>);
+} satisfies Record<string, Metadata>;
 
-export type MaterialName = keyof typeof materials;
+export type MaterialName = keyof typeof materialsMetadata;
+
+/**
+ * Compute appropriate metadata for chunks, features, and materials.
+ * @param revision `Number(THREE.REVISION)`
+ * @returns chunks, features, and materials relevant to `revision`
+ */
+export function computeMetadata(revision: number) {
+  /**
+   * Derives the value of `status` for each object entry at runtime
+   * @param record Object with values of `Metadata`
+   * @returns Object with `status` property added to each value
+   */
+  function computeStatus<T extends Record<string, Metadata>>(record: T) {
+    const result = {} as { [K in keyof T]: RuntimeMetadata };
+
+    for (const key in record) {
+      const metadata = record[key];
+
+      const since = metadata.since ?? -Infinity;
+      const deprecated = metadata.deprecated ?? Infinity;
+
+      let status: RuntimeMetadata['status'];
+
+      if (revision < since) {
+        status = 'future';
+      } else if (revision >= deprecated) {
+        status = 'deprecated';
+      } else {
+        status = 'available';
+      }
+
+      result[key] = {
+        ...(metadata.since !== undefined && {
+          since: metadata.since,
+        }),
+        ...(metadata.deprecated !== undefined && {
+          deprecated: metadata.deprecated,
+        }),
+        ...(metadata.subsystems !== undefined && {
+          subsystems: metadata.subsystems,
+        }),
+        ...(metadata.chunks !== undefined && {
+          chunks:
+            typeof metadata.chunks === 'function'
+              ? metadata.chunks(revision)
+              : metadata.chunks,
+        }),
+        status,
+      };
+    }
+
+    return result;
+  }
+
+  const chunks = computeStatus(chunksMetadata);
+
+  const features = computeStatus(featuresMetadata);
+
+  const materials = computeStatus(materialsMetadata);
+
+  return {
+    chunks,
+    features,
+    materials,
+    /** `ShaderLib` key for `cube` material was renamed in Three.js r146 */
+    cubeMaterial: revision < 146 ? 'cube' : 'backgroundCube',
+    /** `ShaderLib` key for `distance` material was renamed in Three.js r182 */
+    distanceMaterial: revision < 182 ? 'distanceRGBA' : 'distance',
+    /** `Number(THREE.REVISION)` */
+    revision,
+  } as const;
+}
+
+export type ThreeMetadata = ReturnType<typeof computeMetadata>;

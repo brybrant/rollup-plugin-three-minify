@@ -1,7 +1,6 @@
 import { name } from '../../package.json';
 
-import { revision } from '../const';
-
+import type { ThreeMetadata } from '../const';
 import type { Options } from '../options';
 
 const warning = JSON.stringify(`[${name}]:
@@ -23,9 +22,16 @@ If you wish to use textures then you must enable the "textures" option or includ
 
 /**
  * @param debug Emit console warning?
+ * @param metadata Three.js metadata
  * @returns `WebGLTextures` stub
  */
-export const WebGLTextures = (debug: Options['debug']) => `
+export const WebGLTextures = (
+  debug: Options['debug'],
+  metadata: ThreeMetadata,
+) => {
+  const { revision } = metadata;
+
+  return `
 function WebGLTextures(${revision < 182 ? '' : ' _gl, extensions, state '}) {
   let textureUnits = 0;
 
@@ -71,3 +77,4 @@ function WebGLTextures(${revision < 182 ? '' : ' _gl, extensions, state '}) {
   }
 }
 `;
+};

@@ -1,20 +1,26 @@
 import { name } from '../../package.json';
 
-import { cubeMaterial, revision } from '../const';
-
+import type { ThreeMetadata } from '../const';
 import type { Options } from '../options';
 
-const warning = JSON.stringify(`[${name}]:
+/**
+ * @param debug Emit console warning?
+ * @param metadata Three.js metadata
+ * @returns `WebGLBackground` stub
+ */
+export const WebGLBackground = (
+  debug: Options['debug'],
+  metadata: ThreeMetadata,
+) => {
+  const { cubeMaterial, revision } = metadata;
+
+  const warning = JSON.stringify(`[${name}]:
 Support for textures on Scene.background property has been removed.
 If you wish to use background textures then you must include the appropriate background material in the plugin options:
 - "background" for flat textures
 - "${cubeMaterial}" for cube textures`);
 
-/**
- * @param debug Emit console warning?
- * @returns `WebGLBackground` stub
- */
-export const WebGLBackground = (debug: Options['debug']) => `
+  return `
 function WebGLBackground(
   renderer,
   ${revision < 183 ? 'cubemaps' : 'environments'},
@@ -95,3 +101,4 @@ function WebGLBackground(
   };
 }
 `;
+};

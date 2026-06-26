@@ -1,10 +1,8 @@
-import { UniformsLib } from 'three';
-
-import { type Replacer, revision } from './const';
+import { type Replacer } from './const';
 
 import { glslFunctions, glslKeywords, glslTypes } from './glsl-grammar';
 
-const threeFunctions = [
+const threeFunctions = (revision: number) => [
   ...(revision < 136
     ? [
         /** Old transcoding functions */
@@ -49,29 +47,6 @@ const threeFunctions = [
   'ReinhardToneMapping',
   'toneMapping',
 ];
-
-/** Contains all strings which may *never* be changed */
-const reserved = new Set([
-  ...glslFunctions,
-  ...glslKeywords,
-  ...glslTypes,
-  ...threeFunctions,
-]);
-
-/**
- * Adds all Uniforms (and properties of `struct` type uniforms) to `reserved`
- */
-for (const uniformGroup of Object.values(UniformsLib)) {
-  for (const [uniformName, uniformValue] of Object.entries(uniformGroup)) {
-    reserved.add(uniformName);
-
-    if (uniformValue.properties === undefined) continue;
-
-    for (const property of Object.keys(uniformValue.properties)) {
-      reserved.add(property);
-    }
-  }
-}
 
 const types = `(${[
   // Image / Sampler / Texture types
@@ -118,14 +93,40 @@ const componentRegex = /^([xyzw]{1,4}|[rgba]{1,4}|[stpq]{1,4})$/;
 /**
  * Create an identifier frequency map, and a regular expression to find them
  * @param code code
+ * @param uniforms `THREE.UniformsLib`
+ * @param revision `THREE.REVISION`
  * @returns `{ identifiers, identifierRegex }`
  */
-export function recordIdentifiers(code: string) {
+export function recordIdentifiers(
+  code: string,
+  uniforms: typeof import('three').UniformsLib,
+  revision: number,
+) {
   /** Map of "mutable" identifiers */
   const identifiers: IdentifierMap = new Map();
 
-  /** Create a local copy of `reserved` for mutation within this scope */
-  const reservedIdentifiers = new Set(reserved);
+  /** Contains all strings which may *never* be changed */
+  const reservedIdentifiers = new Set([
+    ...glslFunctions,
+    ...glslKeywords,
+    ...glslTypes,
+    ...threeFunctions(revision),
+  ]);
+
+  /**
+   * Adds all Uniforms + keys of `struct` uniforms to `reservedIdentifiers`
+   */
+  for (const uniformGroup of Object.values(uniforms)) {
+    for (const [uniformName, uniformValue] of Object.entries(uniformGroup)) {
+      reservedIdentifiers.add(uniformName);
+
+      if (uniformValue.properties === undefined) continue;
+
+      for (const property of Object.keys(uniformValue.properties)) {
+        reservedIdentifiers.add(property);
+      }
+    }
+  }
 
   const identifierRecorder: Replacer = (match, immutable, type, identifier) => {
     if (immutable) {

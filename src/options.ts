@@ -1,14 +1,9 @@
-import {
-  type RuntimeMetadata,
-  chunks,
-  type ChunkName,
-  features,
-  type FeatureName,
-  materials,
-  type MaterialName,
-  cubeMaterial,
-  distanceMaterial,
-  revision,
+import type {
+  RuntimeMetadata,
+  ChunkName,
+  FeatureName,
+  MaterialName,
+  ThreeMetadata,
 } from './const';
 
 export interface Options {
@@ -205,7 +200,12 @@ export interface UserOptions extends Partial<
   materials?: MaterialName[] | MaterialName;
 }
 
-export const parseOptions = (options: UserOptions): Options => {
+export const parseOptions = (
+  options: UserOptions,
+  metadata: ThreeMetadata,
+): Options => {
+  const { cubeMaterial, distanceMaterial, revision } = metadata;
+
   const userChunks: Set<ChunkName> = new Set();
   const userMaterials: Set<MaterialName> = new Set();
 
@@ -219,13 +219,7 @@ export const parseOptions = (options: UserOptions): Options => {
     textures: !!options.textures,
   };
 
-  const optionSources = {
-    chunks,
-    features,
-    materials,
-  } as const;
-
-  type OptionName = keyof typeof optionSources;
+  type OptionName = 'chunks' | 'features' | 'materials';
 
   /**
    * Helper to convert `OptionName` properties of `UserOptions` to arrays
@@ -264,33 +258,35 @@ export const parseOptions = (options: UserOptions): Options => {
    * @param optionValue Values of `optionName`
    */
   function addOption(optionName: OptionName, optionValue: readonly string[]) {
-    const optionSource = optionSources[optionName] as OptionSource;
+    const optionSource = metadata[optionName] as OptionSource;
 
     for (const value of optionValue) {
-      const metadata = optionSource[value];
+      const valueMetadata = optionSource[value];
 
-      if (metadata === undefined) {
+      if (valueMetadata === undefined) {
         throw new Error(
           `Unrecognized value in '${optionName}' option: "${value}"`,
         );
       }
 
-      switch (metadata.status) {
+      switch (valueMetadata.status) {
         case 'future':
           console.warn(
-            `${optionName} value "${value}" is not available in Three.js r${revision}. It was introduced in r${metadata.since}`,
+            `${optionName} value "${value}" is not available in Three.js r${revision}. It was introduced in r${valueMetadata.since}`,
           );
           break;
 
         case 'available':
-          if (metadata.chunks) {
-            for (const chunk of metadata.chunks) {
-              userChunks.add(chunk);
+          if (valueMetadata.chunks) {
+            for (const chunk of valueMetadata.chunks) {
+              const chunkMetadata = metadata.chunks[chunk];
+
+              if (chunkMetadata.status === 'available') userChunks.add(chunk);
             }
           }
 
-          if (metadata.subsystems) {
-            for (const subsystem of metadata.subsystems) {
+          if (valueMetadata.subsystems) {
+            for (const subsystem of valueMetadata.subsystems) {
               subsystems[subsystem] = true;
             }
           }
@@ -307,7 +303,7 @@ export const parseOptions = (options: UserOptions): Options => {
 
         case 'deprecated':
           console.warn(
-            `${optionName} value "${value}" was deprecated in Three.js r${metadata.deprecated} and is not available in r${revision}.`,
+            `${optionName} value "${value}" was deprecated in Three.js r${valueMetadata.deprecated} and is not available in r${revision}.`,
           );
       }
     }

@@ -1,4 +1,4 @@
-import type { Replacer } from './const';
+import type { Replacer, ThreeMetadata } from './const';
 import type { Options } from './options';
 
 import { WebGLBackground } from './stubs/background';
@@ -17,10 +17,15 @@ const subsystemRegex = /^(?:function|class) Web(GL|XR)([a-zA-Z]+)[^]+?^}/gm;
  * Prunes redundant subsystems of `WebGLRenderer`.
  * Redundant subsystems are determined by flags set in the `options` object.
  * @param code code
+ * @param metadata Three.js metadata
  * @param options User options
  * @returns `code` (modified)
  */
-export function pruneSubsystems(code: string, options: Options): string {
+export function pruneSubsystems(
+  code: string,
+  metadata: ThreeMetadata,
+  options: Options,
+): string {
   /**
    * Replaces each redundant subsystem with a stub
    * @param match `$&`
@@ -40,7 +45,7 @@ export function pruneSubsystems(code: string, options: Options): string {
     switch (subsystem) {
       case 'Background':
         if (!options.subsystems.background) {
-          return WebGLBackground(options.debug);
+          return WebGLBackground(options.debug, metadata);
         }
         break;
 
@@ -78,7 +83,7 @@ export function pruneSubsystems(code: string, options: Options): string {
 
       case 'Textures':
         if (!options.subsystems.textures) {
-          return WebGLTextures(options.debug);
+          return WebGLTextures(options.debug, metadata);
         }
         break;
 
