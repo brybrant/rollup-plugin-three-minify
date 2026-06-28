@@ -1,13 +1,11 @@
-import { createRequire } from 'node:module';
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { cwd } from 'node:process';
 import { pathToFileURL } from 'node:url';
 
 import { name } from '../package.json';
 
-import type { Plugin } from 'rollup';
+import type { Plugin, ResolvedId } from 'rollup';
 
 import { createFilter } from '@rollup/pluginutils';
 
@@ -37,25 +35,20 @@ const inlineRegex = /\/\* glsl \*\/`([^]+?)`/g;
  * @returns Rollup plugin
  */
 export default function (userOptions: UserOptions = {}): Plugin {
-  const require = createRequire(resolve(cwd(), 'package.json'));
-
-  const threePath = require.resolve('three');
-
-  const threeCoreID = resolve(threePath, '../three.core.js');
-  const threeModuleID = resolve(threePath, '../three.module.js');
-
   const glslFilter = createFilter(
     userOptions.include ?? '**/*.glsl',
     userOptions.exclude,
   );
+
+  let threeResolved: ResolvedId | null;
 
   let options: Options;
 
   let mangle: ReturnType<typeof createMangler>;
 
   /**
-   * Regex to remove all `#include <xyz>` GLSL directives for all entries
-   * which have been removed from `ShaderChunk`.
+   * Regex to remove all `#include <xyz>` GLSL directives which correspond to
+   * entries in `ShaderChunk` which have been removed.
    *
    * If `options.chunks` contains *all* chunks, then none need to be removed.
    */
@@ -93,6 +86,18 @@ export default function (userOptions: UserOptions = {}): Plugin {
       };
     },
     async buildStart() {
+      threeResolved = await this.resolve('three');
+
+      let threeModuleID: string;
+      let threeCoreID: string;
+
+      if (threeResolved) {
+        threeModuleID = threeResolved.id.split('?')[0];
+        threeCoreID = resolve(threeModuleID, '../three.core.js');
+      } else {
+        throw new Error(`[${name}] Could not resolve 'three'`);
+      }
+
       const three = (await import(
         pathToFileURL(threeModuleID).href
       )) as typeof THREE;
@@ -306,6 +311,8 @@ export default function (userOptions: UserOptions = {}): Plugin {
     resolveId: {
       order: 'pre',
       handler(source, importer) {
+        if (!threeResolved) return null;
+
         switch (source) {
           case 'three':
             return VIRTUAL_THREE_MODULE;
