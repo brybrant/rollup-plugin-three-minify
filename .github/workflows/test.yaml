@@ -11,9 +11,11 @@ jobs:
         uses: actions/checkout@v4
       - name: Install bun
         uses: oven-sh/setup-bun@v2
+      - name: Link package
+        run: bun link
       - name: Install dependencies
         run: bun install
       - name: Install Playwright browsers
-        run: bunx playwright install
+        run: bunx playwright install --with-deps
       - name: Run test
         run: bun test
