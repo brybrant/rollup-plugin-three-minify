@@ -12,6 +12,32 @@ declare module 'three' {
    */
   export const REVISION: string;
 
+  /**
+   * Used for the `Texture.encoding` property value
+   * @deprecated 0.152.0
+   */
+  export const sRGBEncoding: 3001;
+
+  /**
+   * Used for the `Texture.colorSpace` property value
+   * @since 0.152.0
+   */
+  export const SRGBColorSpace: 'srgb';
+
+  /**
+   * Used for the `Texture.format` property value of monochromatic textures
+   * (such as the `MeshToonMaterial.gradientMap` property) in Three.js
+   * revisions before 136
+   */
+  export const LuminanceFormat: 1024;
+
+  /**
+   * Used for the `Texture.format` property value of monochromatic textures
+   * (such as the `MeshToonMaterial.gradientMap` property) in Three.js
+   * revisions after 135
+   */
+  export const RedFormat: 1028;
+
   export const ShaderChunk: Record<string, string>;
 
   export const ShaderLib: Record<

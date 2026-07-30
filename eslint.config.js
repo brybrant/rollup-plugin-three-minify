@@ -4,8 +4,8 @@ import globals from 'globals';
 
 import eslintConfig from '@brybrant/eslint-config';
 
-export default eslintConfig(globalIgnores(['./test/**/dist/**/*']), {
-  files: ['./**/*.js'],
+export default eslintConfig(globalIgnores(['./test/three/**/*']), {
+  files: ['./test/**/*.js'],
   languageOptions: {
     globals: globals.browser,
   },

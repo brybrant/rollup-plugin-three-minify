@@ -3,8 +3,6 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { name } from '../package.json';
-
 import type { Plugin, ResolvedId } from 'rollup';
 
 import { createFilter } from '@rollup/pluginutils';
@@ -23,11 +21,9 @@ import { recordIdentifiers, createMangler } from './mangler';
 import { pruneSubsystems } from './prune-subsystems';
 import { minifyGLSL } from './minify-glsl';
 
-const VIRTUAL_THREE_CORE = `\0${name}:core` as const;
-const VIRTUAL_THREE_MODULE = `\0${name}:module` as const;
-
-/** Matches inline GLSL */
-const inlineRegex = /\/\* glsl \*\/`([^]+?)`/g;
+const PLUGIN_NAME = 'rollup-plugin-three-minify' as const;
+const VIRTUAL_THREE_CORE = `\0${PLUGIN_NAME}:core` as const;
+const VIRTUAL_THREE_MODULE = `\0${PLUGIN_NAME}:module` as const;
 
 /**
  * Minify GLSL code in Three.js and remove redundant `WebGLRenderer` subsystems
@@ -62,7 +58,7 @@ export default function (userOptions: UserOptions = {}): Plugin {
   let viteWarned = false;
 
   return {
-    name,
+    name: PLUGIN_NAME,
     // @ts-expect-error This is a vite-specific property
     enforce: 'pre',
     // @ts-expect-error This is a vite-specific hook
@@ -74,7 +70,7 @@ export default function (userOptions: UserOptions = {}): Plugin {
 
       if (!viteWarned) {
         console.warn(
-          `[${name}] Disabling Vite dependency pre-bundling for "three"`,
+          `[${PLUGIN_NAME}] Disabling Vite dependency pre-bundling for "three"`,
         );
         viteWarned = true;
       }
@@ -88,15 +84,12 @@ export default function (userOptions: UserOptions = {}): Plugin {
     async buildStart() {
       threeResolved = await this.resolve('three');
 
-      let threeModuleID: string;
-      let threeCoreID: string;
-
-      if (threeResolved) {
-        threeModuleID = threeResolved.id.split('?')[0];
-        threeCoreID = resolve(threeModuleID, '../three.core.js');
-      } else {
-        throw new Error(`[${name}] Could not resolve 'three'`);
+      if (!threeResolved) {
+        throw new Error(`[${PLUGIN_NAME}] Could not resolve 'three'`);
       }
+
+      const threeModuleID = threeResolved.id.split('?')[0];
+      const threeCoreID = resolve(threeModuleID, '../three.core.js');
 
       const three = (await import(
         pathToFileURL(threeModuleID).href
@@ -110,8 +103,10 @@ export default function (userOptions: UserOptions = {}): Plugin {
 
       options = parseOptions(userOptions, metadata);
 
+      /** Mutable copy of `three.core.js` file contents */
       let threeCore = '';
 
+      /** Mutable copy of `three.module.js` file contents */
       let threeModule = await readFile(threeModuleID, 'utf8');
 
       /**
@@ -119,10 +114,9 @@ export default function (userOptions: UserOptions = {}): Plugin {
        * - `three.core.js` if the revision is 170 or below
        * - `three.module.js` if the revision is 171 or above
        * @param code code
-       * @param options Options
        * @returns code (modified)
        */
-      function preprocessCore(code: string, options: Options) {
+      function preprocessCore(code: string) {
         if (!options.jsonMethods) {
           /** Remove `toJSON` and `fromJSON` methods on all classes */
           code = code.replace(
@@ -145,9 +139,9 @@ export default function (userOptions: UserOptions = {}): Plugin {
       if (existsSync(threeCoreID)) {
         threeCore = await readFile(threeCoreID, 'utf8');
 
-        threeCore = preprocessCore(threeCore, options);
+        threeCore = preprocessCore(threeCore);
       } else {
-        threeModule = preprocessCore(threeModule, options);
+        threeModule = preprocessCore(threeModule);
       }
 
       threeModule = pruneSubsystems(threeModule, metadata, options);
@@ -174,12 +168,14 @@ export default function (userOptions: UserOptions = {}): Plugin {
         discardChunks.push(chunk);
       }
 
+      const materialVariable = '(vertex|fragment)\\$[a-z0-9]';
+
       /**
        * All `ShaderChunk` variables must be removed to get an accurate
        * analysis of GLSL identifiers later for mangling
        */
       const glslVariableRegex = new RegExp(
-        `(const|var) (${allChunks.join('|')}|(vertex|fragment)\\$[a-z0-9]).+\\n+`,
+        `(const|var) (${allChunks.join('|')}|${materialVariable}).+\\n+`,
         'g',
       );
 
@@ -236,6 +232,9 @@ export default function (userOptions: UserOptions = {}): Plugin {
           return ShaderLib.replace(/ShaderLib\.physical[^]+/, '');
         },
       );
+
+      /** Matches inline GLSL */
+      const inlineRegex = /\/\* glsl \*\/`([^]+?)`/g;
 
       if (options.mangle) {
         const { identifiers, identifierRegex } = recordIdentifiers(

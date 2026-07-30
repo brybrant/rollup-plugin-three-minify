@@ -1,3 +1,5 @@
+import type { FilterPattern } from '@rollup/pluginutils';
+
 import type {
   RuntimeMetadata,
   ChunkName,
@@ -24,16 +26,17 @@ export interface Options {
    *
    * Set this option to `false` to help debug shader errors.
    *
-   * Mangled identifiers will always match this regex: `_[a-zA-Z0-9]+`
-   *
-   * If you keep this option enabled, please avoid using identifiers which
-   * start with an underscore (`_`) in your GLSL code to avoid naming conflicts.
+   * > Mangled identifiers will always match this regex: `_[a-zA-Z0-9]+`
+   * >
+   * > If you keep this option enabled, please avoid using identifiers which
+   * > start with an underscore (`_`) in your GLSL code to avoid potential
+   * > naming conflicts.
    * @default true
    */
   mangle: boolean;
 
   /**
-   * ### Include `THREE.Color.NAMES`?
+   * ### Include `THREE.Color.NAMES` ?
    * Set this option to `true` if your application will create colors by name.
    * @default false
    */
@@ -141,18 +144,20 @@ export interface UserOptions extends Partial<
   Omit<Options, 'chunks' | 'materials' | 'subsystems'>
 > {
   /**
-   * Glob pattern(s) matching GLSL files to transform (mangle and minify)
+   * [Picomatch](https://github.com/micromatch/picomatch) pattern(s) matching
+   * GLSL files to transform (mangle and minify)
    * @since 2.0.0
    * @default ['**\/*.glsl']
    */
-  include?: string | string[];
+  include?: FilterPattern;
 
   /**
-   * Glob pattern(s) matching GLSL files to ignore
+   * [Picomatch](https://github.com/micromatch/picomatch) pattern(s) exempting
+   * a subset of GLSL files matched by the `include` option.
    * @since 2.0.0
    * @default []
    */
-  exclude?: string | string[];
+  exclude?: FilterPattern;
 
   /**
    * ### Include `WebGLTextures` subsystem?

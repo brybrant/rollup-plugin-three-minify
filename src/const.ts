@@ -35,7 +35,8 @@ const metadata = {
   alphahash: { since: 154 },
   batching: { since: 159, subsystems: ['textures'] },
   iridescence: { since: 141 },
-} satisfies Record<string, Metadata>;
+  uvs2: { deprecated: 151, subsystems: ['textures'] },
+} as const satisfies Record<string, Metadata>;
 
 /**
  * Basically `THREE.ShaderChunk` with some metadata (minus material shaders)
@@ -164,13 +165,13 @@ const chunksMetadata = {
   uv_pars_vertex: { subsystems: ['textures'] },
   uv_vertex: { subsystems: ['textures'] },
   /** Merged with `uv_pars_fragment` */
-  uv2_pars_fragment: { deprecated: 151, subsystems: ['textures'] },
+  uv2_pars_fragment: metadata.uvs2,
   /** Merged with `uv_pars_vertex` */
-  uv2_pars_vertex: { deprecated: 151, subsystems: ['textures'] },
+  uv2_pars_vertex: metadata.uvs2,
   /** Merged with `uv_vertex` */
-  uv2_vertex: { deprecated: 151, subsystems: ['textures'] },
+  uv2_vertex: metadata.uvs2,
   worldpos_vertex: {},
-} satisfies Record<string, Metadata>;
+} as const satisfies Record<string, Metadata>;
 
 export type ChunkName = keyof typeof chunksMetadata;
 
@@ -199,7 +200,7 @@ const featuresMetadata = {
   /** `Material.aoMap` (Ambient occlusion map) */
   aomap: {
     chunks: (revision) => [
-      ...(revision < 151 ? uvs2 : uvs),
+      ...(revision < metadata.uvs2.deprecated ? uvs2 : uvs),
       'aomap_fragment',
       'aomap_pars_fragment',
       'common',
@@ -294,7 +295,7 @@ const featuresMetadata = {
   /** `Material.lightMap` */
   lightmap: {
     chunks: (revision) => [
-      ...(revision < 151 ? uvs2 : uvs),
+      ...(revision < metadata.uvs2.deprecated ? uvs2 : uvs),
       'lightmap_fragment',
       'lightmap_pars_fragment',
       'lights_fragment_maps',
@@ -409,7 +410,7 @@ const featuresMetadata = {
   vertices: {
     chunks: ['common', 'begin_vertex', 'project_vertex'],
   },
-} satisfies Record<string, Metadata>;
+} as const satisfies Record<string, Metadata>;
 
 export type FeatureName = keyof typeof featuresMetadata;
 
@@ -585,7 +586,7 @@ const materialsMetadata = {
   sprite: {
     chunks: [...coreOpaque, 'common'],
   },
-} satisfies Record<string, Metadata>;
+} as const satisfies Record<string, Metadata>;
 
 export type MaterialName = keyof typeof materialsMetadata;
 

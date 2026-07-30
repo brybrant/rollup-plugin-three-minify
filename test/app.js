@@ -67,6 +67,6 @@ export function createScene(props) {
     );
     renderer.render(scene, camera);
 
-    requestAnimationFrame(() => renderer.render(scene, camera));
+    document.title = 'Finished!';
   });
 }

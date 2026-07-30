@@ -9,7 +9,9 @@ This plugin reduces the bundle size of applications using [Three.js](https://thr
 - Minifies GLSL code by removing redundant whitespace and mangling identifiers
 
 > [!NOTE]
-> This plugin is backwards-compatible with Three.js revisions down to 135. It might work with earlier revisions but I will not guarantee that.
+> This plugin is:
+> - Only designed to minify the **WebGL** parts of Three.js, not the new WebGPU stuff.
+> - Backwards-compatible with Three.js revisions down to 135. It *might* work with earlier revisions but I will not guarantee that.
 
 ## Rationale
 
@@ -113,28 +115,28 @@ This Rollup configuration will remove all shaders and subsystems that are not re
 
 ### `include`
 
-- **Type:** `string | string[]`
+- **Type:** `string | RegExp | Array<string | RegExp>`
 - **Default:** `['**/*.glsl']`
 
-Glob pattern(s) matching GLSL files to transform (mangle and minify)
+[Picomatch](https://github.com/micromatch/picomatch#globbing-features) pattern(s) matching GLSL files to transform (mangle and minify)
 
 > [!NOTE]
-> Each glob must be a valid [picomatch](https://github.com/micromatch/picomatch#globbing-features) pattern.
-> Globs are resolved relative to the current working directory.
+> This option is passed to [@rollup/pluginutils](https://www.npmjs.com/package/@rollup/pluginutils#include-and-exclude) `createFilter` function (first parameter: "include")
 
 ---
+
 ### `exclude`
 
-- **Type:** `string | string[]`
+- **Type:** `string | RegExp | Array<string | RegExp>`
 - **Default:** `[]`
 
-Glob pattern(s) matching GLSL files to ignore
+[Picomatch](https://github.com/micromatch/picomatch#globbing-features) pattern(s) exempting a subset of GLSL files matched by the [`include`](#include) option.
 
 > [!NOTE]
-> Each glob must be a valid [picomatch](https://github.com/micromatch/picomatch#globbing-features) pattern.
-> Globs are resolved relative to the current working directory.
+> This option is passed to [@rollup/pluginutils](https://www.npmjs.com/package/@rollup/pluginutils#include-and-exclude) `createFilter` function (second parameter: "exclude")
 
 ---
+
 ### `mangle`
 
 - **Type:** `boolean`
@@ -147,7 +149,7 @@ Set this option to `false` to help debug shader errors.
 > [!NOTE]
 > Mangled identifiers will always match this regex: `_[a-zA-Z0-9]+`
 > 
-> If you keep this option enabled, please avoid using identifiers which start with an underscore (`_`) in your GLSL code to avoid naming conflicts.
+> If you keep this option enabled, please avoid using identifiers which start with an underscore (`_`) in your GLSL code to avoid potential naming conflicts.
 
 <details>
 <summary>Mangle Example</summary>
@@ -235,12 +237,13 @@ export default {
 </details>
 
 ---
+
 ### `colorKeywords`
 
 - **Type:** `boolean`
 - **Default:** `false`
 
-Three.js contains an object called `colorKeywords` which maps CSS color names (see [named-color](https://mdn.io/named-color)) to color values, so you can create colors with CSS color names.
+Three.js contains an object called `colorKeywords` which maps [CSS color names](https://mdn.io/named-color) to color values. This allows you to create Three.js colors with CSS color name strings.
 
 Set this option to `true` if your application will create colors by name.
 
@@ -270,12 +273,13 @@ export default {
 </details>
 
 ___
+
 ### `jsonMethods`
 
 - **Type:** `boolean`
 - **Default:** `false`
 
-Many classes in Three.js include a `toJSON()` method which is used to safely serialize its data. Some classes also have a `fromJSON()` method which is used to reverse the serialization. These methods are analogous to [`JSON.stringify()`](http://mdn.io/stringify) and [`JSON.parse()`](http://mdn.io/parse).
+Many classes in Three.js include a [`toJSON()`](http://mdn.io/stringify) method which is used to serialize its data. Some classes also have a [`fromJSON()`](http://mdn.io/parse) method which can be used to reverse the serialization.
 
 Set this option to `true` if your application will use these JSON methods.
 
@@ -305,6 +309,7 @@ export default {
 </details>
 
 ___
+
 ### `xr`
 
 - **Type:** `boolean`
@@ -340,6 +345,7 @@ export default {
 </details>
 
 ___
+
 ### `materials`
 
 - **Type:** `MaterialName | MaterialName[]`
@@ -378,6 +384,7 @@ Three.js material(s) to keep in the bundle **(whitelist)**
 </details>
 
 ___
+
 ### `features`
 
 - **Type:** `FeatureName | FeatureName[]`
@@ -411,26 +418,28 @@ Check [this handy Material Feature compatibility table](https://threejs.org/manu
 |`fog`|[`Scene.fog`](https://threejs.org/docs/#Scene.fog)|
 |`iridescence`|[`Material.iridescence`](https://threejs.org/docs/#MeshPhysicalMaterial.iridescence) (since revision ≥141)|
 |`lightmap`|`Material.lightMap`|
-|`lights`|For any shader which responds to lights<sup>[[1]](#feature-caveat1)</sup>|
+|`lights`|For any shader which responds to lights<sup>[[1]](#feature-caveat1) </sup>|
 |`logdepthbuf`|[`Renderer.logarithmicDepthBuffer`](https://threejs.org/docs/#Renderer.logarithmicDepthBuffer)|
 |`map`|`Material.map`|
 |`metalnessmap`|[`Material.metalnessMap`](https://threejs.org/docs/#MeshStandardMaterial.metalnessMap)|
 |`morphtargets`|[`BufferGeometry.morphAttributes`](https://threejs.org/docs/#BufferGeometry.morphAttributes)|
 |`normalmap`|`Material.normalMap`|
-|`normals`|For any shader which uses the `normal` geometry attribute<sup>[[1]](#feature-caveat1)</sup>|
+|`normals`|For any shader which uses the `normal` geometry attribute<sup>[[1]](#feature-caveat1) </sup>|
 |`roughnessmap`|[`Material.roughnessMap`](https://threejs.org/docs/#MeshStandardMaterial.roughnessMap)|
 |`shadows`|[`Renderer.shadowMap.enabled`](https://threejs.org/docs/#Renderer.shadowMap)|
 |`skinning`|[`SkinnedMesh`](https://threejs.org/docs/#SkinnedMesh)|
 |`specularmap`|`Material.specularMap`|
 |`tonemapping`|[`Renderer.toneMapping`](https://threejs.org/docs/#Renderer.toneMapping)|
 |`transmission`|[`Material.transmission`](https://threejs.org/docs/#MeshPhysicalMaterial.transmission)|
-|`vertices`|For any shader which uses the `position` geometry attribute<sup>[[1]](#feature-caveat1)</sup>|
+|`vertices`|For any shader which uses the `position` geometry attribute<sup>[[1]](#feature-caveat1) </sup>|
 
 <a name="feature-caveat1"></a>
+
 <sup>[1]</sup> *This feature is automatically included by applicable Three.js materials, so exists only as convenience for authoring custom shaders.*
 </details>
 
 ___
+
 ### `chunks`
 
 - **Type:** `ChunkName | ChunkName[]`
@@ -453,6 +462,7 @@ Please check your ShaderChunk source code for a full list of all "chunks" releva
 </details>
 
 ___
+
 ### `textures`
 
 - **Type:** `boolean`
@@ -463,6 +473,7 @@ The `WebGLRenderer` class uses a subsystem called `WebGLTextures` which is respo
 Set this option to `true` if your application uses textures in ways that cannot be inferred by your selection of [`materials`](#materials) or [`features`](#features) (for example, if your application uses render targets or custom shaders).
 
 ---
+
 ### `debug`
 
 - **Type:** `boolean`
