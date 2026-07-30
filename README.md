@@ -1,6 +1,7 @@
 # rollup-plugin-three-minify
 
 [<img src='https://img.shields.io/npm/v/rollup-plugin-three-minify'>](https://www.npmjs.com/package/rollup-plugin-three-minify)
+[<img src='https://img.shields.io/github/actions/workflow/status/brybrant/rollup-plugin-three-minify/plugin-test.yaml?logo=github&logoColor=fff&label=Compatibility%20Tests'>](https://github.com/brybrant/rollup-plugin-three-minify/actions/workflows/plugin-test.yaml)
 
 This plugin reduces the bundle size of applications using [Three.js](https://threejs.org) by:
 - Removing redundant `WebGLRenderer` subsystems
