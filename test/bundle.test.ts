@@ -40,9 +40,9 @@ net.Socket.prototype.connect = function (...args) {
 };
 
 // My code...
-import { readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
+import { Glob } from 'bun';
 import { describe, expect, test } from 'bun:test';
 import { chromium, expect as playwrightExpect } from '@playwright/test';
 
@@ -100,7 +100,16 @@ const browser = await chromium.launch();
 const context = await browser.newContext();
 const page = await context.newPage();
 
-const milestones = await readdir('./test/three');
+const milestonesGlob = new Glob('three-r?*');
+
+const node_modules = resolve(process.cwd(), 'node_modules');
+
+const milestones = await Array.fromAsync(
+  milestonesGlob.scan({
+    cwd: node_modules,
+    onlyFiles: false,
+  }),
+);
 
 milestones.sort();
 
@@ -109,11 +118,7 @@ const materialShader = /_(vert|frag)$/;
 const stringify = (any: unknown) => JSON.stringify(any, null, 2);
 
 for (const milestone of milestones) {
-  const threeModuleID = resolve(`./test/three/${milestone}/three.module.js`);
-
-  const three = (await import(
-    Bun.pathToFileURL(threeModuleID).href
-  )) as typeof THREE;
+  const three = (await import(milestone)) as typeof THREE;
 
   const revision = Number(three.REVISION);
 
@@ -162,6 +167,12 @@ for (const milestone of milestones) {
       name: '@brybrant/three-global-plugin',
       banner: globals,
     };
+
+    const threeModuleID = resolve(
+      node_modules,
+      milestone,
+      'build/three.module.js',
+    );
 
     /**
      * @param name Bundle name
