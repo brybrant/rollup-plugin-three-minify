@@ -1,23 +1,21 @@
-name: Bun test
+name: Plugin test (bun + rolldown)
 
 on: workflow_dispatch
 
 jobs:
   build:
-    name: build-app
+    name: Plugin test (bun + rolldown)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install bun
         uses: oven-sh/setup-bun@v2
-      - name: Link package
-        run: bun link
       - name: Install dependencies
         run: bun install
-      - name: Build
+      - name: Build plugin
         run: bun run build
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps
-      - name: Run test
+      - name: Run tests
         run: bun test

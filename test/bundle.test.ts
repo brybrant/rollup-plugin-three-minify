@@ -102,6 +102,8 @@ const page = await context.newPage();
 
 const milestones = await readdir('./test/three');
 
+milestones.sort();
+
 const materialShader = /_(vert|frag)$/;
 
 const stringify = (any: unknown) => JSON.stringify(any, null, 2);
