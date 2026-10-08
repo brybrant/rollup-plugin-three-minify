@@ -1,50 +1,7 @@
-/**
- * Playwright cannot run `chromium.launch()`
- * This patches it (for now)
- * https://github.com/oven-sh/bun/issues/15679#issuecomment-4366905628
- */
-import net from 'node:net';
-
-// eslint-disable-next-line @typescript-eslint/unbound-method
-const originalConnect = net.Socket.prototype.connect;
-
-net.Socket.prototype.connect = function (...args) {
-  let options = args[0];
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  if (Array.isArray(options)) options = options[0];
-
-  const hasFd =
-    options &&
-    typeof options === 'object' &&
-    'fd' in options &&
-    options.fd != null;
-
-  // @ts-expect-error Forward the args (it's fine)
-  const result = originalConnect.apply(this, args);
-
-  if (hasFd && this.connecting) {
-    // @ts-expect-error Apparently this is not read-only?
-    this.connecting = false;
-
-    process.nextTick(() => {
-      // @ts-expect-error Apparently this property does exist?
-      if (!this.destroyed && !this.connected) {
-        // @ts-expect-error Same error as above
-        this.connected = true;
-        this.emit('connect');
-      }
-    });
-  }
-  return result;
-};
-
-// My code...
 import { resolve } from 'node:path';
 
-import { Glob } from 'bun';
-import { describe, expect, test } from 'bun:test';
-import { chromium, expect as playwrightExpect } from '@playwright/test';
+import { WebView } from 'bun';
+import { beforeAll, afterAll, describe, expect, test } from 'bun:test';
 
 import { rolldown, type Plugin, type InputOptions } from 'rolldown';
 
@@ -92,32 +49,61 @@ const html = (js: string) => `
     </style>
   </head>
   <body>
+    <script>
+      window.addEventListener('error', (event) => {
+        console.error(String(event.error?.stack ?? event.message));
+      });
+
+      window.addEventListener('unhandledrejection', (event) => {
+        console.error(String(event.reason));
+      });
+    </script>
     <script>${js}</script>
   </body>
 </html>`;
 
-const browser = await chromium.launch();
-const context = await browser.newContext();
-const page = await context.newPage();
-
-const milestonesGlob = new Glob('three-r?*');
-
 const node_modules = resolve(process.cwd(), 'node_modules');
-
-const milestones = await Array.fromAsync(
-  milestonesGlob.scan({
-    cwd: node_modules,
-    onlyFiles: false,
-  }),
-);
-
-milestones.sort();
 
 const materialShader = /_(vert|frag)$/;
 
 const stringify = (any: unknown) => JSON.stringify(any, null, 2);
 
-for (const milestone of milestones) {
+/**
+ * Run tests for each milestone revision of Three.js
+ * @param milestone Three.js milestone revision (package name)
+ */
+export async function defineMilestoneTests(milestone: string) {
+  let view: WebView;
+
+  const consoleErrors: string[] = [];
+
+  let finish = () => {};
+
+  beforeAll(() => {
+    view = new WebView({
+      width: 120,
+      height: 120,
+      backend: {
+        type: 'chrome',
+        url: false,
+        // argv: ['--enable-gpu'],
+      },
+      console: (type, ...args) => {
+        if (type === 'error') {
+          consoleErrors.push(args.map(String).join(' '));
+        }
+
+        if (type === 'info' && args[0] === 'Finished!') {
+          finish();
+        }
+      },
+    });
+  });
+
+  afterAll(() => {
+    view.close();
+  });
+
   const three = (await import(milestone)) as typeof THREE;
 
   const revision = Number(three.REVISION);
@@ -126,7 +112,7 @@ for (const milestone of milestones) {
 
   const { chunks, materials } = metadata;
 
-  describe(`Three.js ${milestone}`, () => {
+  describe(`Three.js r${revision}`, () => {
     test.concurrent(`ShaderChunk metadata compatibility`, () => {
       const PluginChunk = Object.entries(chunks)
         .filter(([, meta]) => meta.status === 'available')
@@ -185,13 +171,14 @@ for (const milestone of milestones) {
     ): { name: string; config: InputOptions } => ({
       name,
       config: {
+        input: `./test/bundles/${name}.ts`,
+        platform: 'browser',
+        plugins: [globalPlugin, threeMinifyPlugin(options)],
         resolve: {
           alias: {
             three: threeModuleID,
           },
         },
-        input: `./test/bundles/${name}.js`,
-        plugins: [globalPlugin, threeMinifyPlugin(options)],
       },
     });
 
@@ -255,47 +242,32 @@ for (const milestone of milestones) {
     ];
 
     test.each(configs)('Config "$name"', async ({ name, config }) => {
+      consoleErrors.length = 0;
+
       const build = await rolldown(config);
-      const { output } = await build.generate({ format: 'iife' });
+      const { output } = await build.generate({
+        format: 'iife',
+        minify: false,
+      });
       await build.close();
 
       const content = html(output[0].code);
 
-      await page.setContent(content);
+      const finished = new Promise<void>((resolve) => {
+        finish = resolve;
+      });
 
-      /** Wait for the frame to render */
-      await playwrightExpect(page)
-        .toHaveTitle('Finished!')
-        .then(async () => {
-          const errors = await page.consoleMessages().then((messages) => {
-            return messages
-              .filter((message) => message.type() === 'error')
-              .map((message) => message.text());
-          });
+      await view.navigate(
+        `data:text/html;charset=utf-8,${encodeURIComponent(content)}`,
+      );
 
-          expect(errors.length).toBe(0);
+      await finished;
 
-          if (errors.length > 0) {
-            console.error(`"${name}" (${milestone}):\n${stringify(errors)}`);
-          }
-        })
-        .catch(async (error: unknown) => {
-          console.error(error);
+      if (consoleErrors.length > 0) {
+        console.error(`"${name}" (r${revision}):\n`, stringify(consoleErrors));
+      }
 
-          const pageErrors = await page.pageErrors();
-
-          expect(pageErrors.length).toBe(0);
-
-          if (pageErrors.length > 0) {
-            console.error(
-              `"${name}" (${milestone}):\n${stringify(pageErrors)}`,
-            );
-          }
-        })
-        .finally(async () => {
-          await page.clearPageErrors();
-          await page.clearConsoleMessages();
-        });
+      expect(consoleErrors).toEqual([]);
     });
   });
 }

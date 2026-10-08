@@ -1,6 +1,6 @@
 import { BackSide, PlaneGeometry, Mesh, MeshPhongMaterial } from 'three';
 
-import { map } from './create-map';
+import { map } from './create-map.ts';
 
 export const shadowPlane = map.then((bumpMap) => {
   const geometry = new PlaneGeometry(128, 8); // Texture is 16:1

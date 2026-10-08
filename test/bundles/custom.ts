@@ -1,6 +1,6 @@
 import { Color, ShaderMaterial } from 'three';
 
-import { createScene } from '../app';
+import { createScene } from './app.ts';
 
 import vertexShader from './imports/vertex.glsl';
 import fragmentShader from './imports/fragment.glsl';

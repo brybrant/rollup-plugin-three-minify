@@ -1,13 +1,13 @@
 import { Color, MeshLambertMaterial } from 'three';
 
-import { createScene, light, scene } from '../app';
-import { map } from './imports/create-map';
+import { createScene, light, scene } from './app.ts';
+import { map } from './imports/create-map.ts';
 
 scene.add(light);
 
 scene.background = new Color(0x00ff00);
 
-map.then((texture) => {
+void map.then((texture) => {
   createScene({
     label: 'MeshLambertMaterial\n+ emissiveMap',
     material: new MeshLambertMaterial({

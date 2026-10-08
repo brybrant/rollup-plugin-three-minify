@@ -1,15 +1,15 @@
 import { MeshPhongMaterial } from 'three';
 
-import { createScene, light, renderer, scene } from '../app';
-import { equirect } from './imports/create-equirect';
-import { map } from './imports/create-map';
+import { createScene, light, renderer, scene } from './app.ts';
+import { equirect } from './imports/create-equirect.ts';
+import { map } from './imports/create-map.ts';
 
 scene.add(light);
 
 /** Test the `WebXRManager` stub console warning */
 renderer.xr.enabled = true;
 
-Promise.all([equirect, map]).then(([envMap, lightMap]) => {
+void Promise.all([equirect, map]).then(([envMap, lightMap]) => {
   createScene({
     label: 'MeshPhongMaterial\n+ envMap (equirectangular)\n+ lightMap',
     material: new MeshPhongMaterial({

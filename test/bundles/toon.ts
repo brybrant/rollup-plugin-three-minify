@@ -1,7 +1,7 @@
 import { DataTexture, MeshToonMaterial } from 'three';
 
-import { createScene, light, scene } from '../app';
-import { map } from './imports/create-map';
+import { createScene, light, scene } from './app.ts';
+import { map } from './imports/create-map.ts';
 
 scene.add(light);
 
@@ -11,7 +11,7 @@ for (let c = 0; c <= colors.length; c++) {
   colors[c] = Math.min((c + 1) / colors.length, 1) * 255;
 }
 
-map.then((texture) => {
+void map.then((texture) => {
   /** Test the `WebGLBackground` stub console warning */
   scene.background = texture;
 

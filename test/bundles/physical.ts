@@ -1,14 +1,14 @@
 import { MeshPhysicalMaterial } from 'three';
 
-import { createScene, light, scene } from '../app';
-import { equirect } from './imports/create-equirect';
+import { createScene, light, scene } from './app.ts';
+import { equirect } from './imports/create-equirect.ts';
 
 /** Test the `WebGLShadowMap` stub console warning */
 light.castShadow = true;
 
 scene.add(light);
 
-equirect.then((texture) => {
+void equirect.then((texture) => {
   scene.background = scene.environment = texture;
 
   createScene({

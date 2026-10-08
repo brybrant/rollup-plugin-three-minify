@@ -5,6 +5,7 @@ import {
   DirectionalLight,
   TorusKnotGeometry,
   WebGLRenderer,
+  type Material,
 } from 'three';
 
 export const scene = new Scene();
@@ -37,19 +38,14 @@ label.className = 'label';
 document.body.appendChild(renderer.domElement);
 document.body.appendChild(label);
 
-/**
- * @callback SceneCallback
- * @param {Scene} scene
- * @param {WebGLRenderer} renderer
- * @returns {void}
- */
+export type SceneCallback = (scene: Scene, renderer: WebGLRenderer) => void;
 
-/**
- * @param {object} props
- * @param {string} props.label
- * @param {import('three').Material} props.material
- */
-export function createScene(props) {
+type SceneProps = {
+  label: string;
+  material: Material;
+};
+
+export const createScene = (props: SceneProps) => {
   const mesh = new Mesh(geometry, props.material);
 
   mesh.castShadow = true;
@@ -60,13 +56,9 @@ export function createScene(props) {
   label.innerText = props.label;
 
   requestAnimationFrame(() => {
-    renderer.setSize(
-      document.body.offsetWidth,
-      document.body.offsetHeight,
-      false,
-    );
+    renderer.setSize(window.innerWidth, window.innerHeight, false);
     renderer.render(scene, camera);
 
-    document.title = 'Finished!';
+    console.info('Finished!');
   });
-}
+};

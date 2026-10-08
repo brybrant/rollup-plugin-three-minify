@@ -1,9 +1,9 @@
 import { MeshDepthMaterial } from 'three';
 
-import { createScene } from '../app';
-import { map } from './imports/create-map';
+import { createScene } from './app.ts';
+import { map } from './imports/create-map.ts';
 
-map.then((alphaMap) => {
+void map.then((alphaMap) => {
   createScene({
     label: 'MeshDepthMaterial\n+ alphaMap\n+ alphaTest',
     material: new MeshDepthMaterial({

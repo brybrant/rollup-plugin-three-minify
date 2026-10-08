@@ -1,18 +1,17 @@
 {
   "compilerOptions": {
     "allowImportingTsExtensions": true,
+    "allowJs": true,
     "allowSyntheticDefaultImports": true,
-    "declaration": true,
-    "lib": ["ESNext"],
     "module": "Preserve",
     "moduleResolution": "bundler",
     "noEmit": true,
     "noImplicitOverride": true,
     "strict": true,
     "target": "ESNext",
-    "typeRoots": ["../node_modules/@types", "../types"],
+    "typeRoots": ["node_modules/@types", "types"],
     "types": ["bun", "three"],
     "verbatimModuleSyntax": true
   },
-  "include": ["**/*.ts"]
+  "include": ["*", "test/*", "test/generated/*"]
 }

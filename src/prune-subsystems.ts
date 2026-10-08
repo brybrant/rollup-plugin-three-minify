@@ -65,7 +65,7 @@ export function pruneSubsystems(
 
       case 'Lights':
         if (!options.subsystems.lights) {
-          return WebGLLights(options.debug);
+          return WebGLLights(options.debug, metadata);
         }
         break;
 

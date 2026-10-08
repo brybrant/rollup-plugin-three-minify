@@ -549,9 +549,7 @@ const materialsMetadata = {
   },
   /** `MeshPhysicalMaterial` (extends `MeshStandardMaterial`) */
   physical: {
-    chunks: [
-      /* uses the same vert & frag shaders as `MeshStandardMaterial` */
-    ],
+    chunks: [/* uses the same vert & frag shaders as `MeshStandardMaterial` */],
   },
   /** `MeshToonMaterial` */
   toon: {

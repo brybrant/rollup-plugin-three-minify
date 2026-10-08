@@ -1,5 +1,6 @@
 import { name } from '../../package.json';
 
+import type { ThreeMetadata } from '../const';
 import type { Options } from '../options';
 
 const warning = JSON.stringify(`[${name}]:
@@ -13,15 +14,32 @@ If you wish to use lights then you must include the "lights" feature or at least
 
 /**
  * @param debug Emit console warning?
+ * @param metadata Three.js metadata
  * @returns `WebGLLights` stub
  */
-export const WebGLLights = (debug: Options['debug']) => `
+export const WebGLLights = (
+  debug: Options['debug'],
+  metadata: ThreeMetadata,
+) => {
+  const { revision } = metadata;
+
+  return `
 function WebGLLights() {
   const state = {
     get version() { return 0 },
     set version(number) {},
     ambient: [ 0, 0, 0 ],
     probe: [],
+    ${
+      revision < 186
+        ? ''
+        : `
+    sun: [],
+    sunShadow: [],
+    sunShadowMap: [],
+    sunShadowMatrix: [],
+    sunShadowCascade: [],`
+    }
     directional: [],
     directionalShadow: [],
     directionalShadowMap: [],
@@ -60,3 +78,4 @@ function WebGLLights() {
   };
 }
 `;
+};

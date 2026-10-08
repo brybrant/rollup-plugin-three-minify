@@ -1,7 +1,7 @@
 import { MeshLambertMaterial } from 'three';
 
-import { createScene, light, scene, renderer } from '../app';
-import { shadowPlane } from './imports/create-shadow-plane';
+import { createScene, light, scene, renderer } from './app.ts';
+import { shadowPlane } from './imports/create-shadow-plane.ts';
 
 light.shadow.camera.position.copy(light.position);
 light.shadow.camera.lookAt(0, 0, 0);
@@ -16,7 +16,7 @@ scene.add(light);
 
 renderer.shadowMap.enabled = true;
 
-shadowPlane.then((plane) => {
+void shadowPlane.then((plane) => {
   scene.add(plane);
 
   createScene({
